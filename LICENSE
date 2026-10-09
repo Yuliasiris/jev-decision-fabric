@@ -1,0 +1,10 @@
+Release license is pending.
+
+No license grant for project-authored files is asserted by this prepared tree.
+The existing R4 components' MIT licenses do not extend to these files.
+The proposed MIT text and exact allowlist are staged separately for review.
+Do not label this candidate a reusable open-source release until that grant is
+resolved and the actual distribution is published.
+
+Dependencies retain their own licenses. No dependency source, model weights,
+training data or third-party research text is vendored in this tree.
