@@ -1,0 +1,16 @@
+{
+  "question_set": "ops-liveness-v0",
+  "state": {
+    "fixture": true,
+    "task": "demo-delivery",
+    "observations": {
+      "source_saved": true,
+      "local_tests_passed": true,
+      "service_deployed": true,
+      "caller_new_tool_observed": false,
+      "public_source_url_observed": false
+    },
+    "goal": "利用者が最新版の説明から正しい道具を使い、公開ソースを読めること",
+    "scope_note": "This is a synthetic example, not a new judgment of the completed N02 deployment."
+  }
+}

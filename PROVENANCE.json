@@ -1,0 +1,200 @@
+{
+  "schema": "jev.source-distribution-candidate.v1",
+  "state": "PUBLISHED_SOURCE_ONLY_LICENSE_PENDING",
+  "maintainer": "Yuliasiris",
+  "source_inputs": {
+    "fabric_source": "d82b00cb25adce09cd012630b53fd55e1d75c2c1",
+    "fabric_base": "40ecaefbdf23e140a62154e2ec85096a91207391",
+    "recovery_base": "a96bbcdd7996cc14669183513371d11b1fe2f4f8",
+    "recovery_patch_sha256": "a4c2f57be3711c2e35e7b92069d588ea7a222ea4b1b0d9bc8996dd0f1e1472ae",
+    "build_test_repair_sha256": "df3a8c30bbd5b20e54c13b253e45c19e3f045a729b8d50ea96521c123e67d4bc",
+    "completion_source_head": "acfb6204d99862070b0029e9cd99b8b92621b712"
+  },
+  "production_evidence": {
+    "n02_status": "COMPLETE",
+    "source_zip_sha256": "77f4fa3ab2341117a5201fe248653b80ddfad27db45c7798731ab8b9d22dd2f8",
+    "function_sha256": "0e02f7011ed90bbbf6bd2d14cca905227aa92ace98f49654898ede7f2fdb5fef",
+    "server_tests_passed": 215,
+    "evidence_reused_not_rerun": true,
+    "not_a_claim_of_public_plugin_update": true
+  },
+  "release_delta": {
+    "fixed_origin": "two placeholders; configure-origin.mjs replaces only those",
+    "runtime_core_and_questions": "Target runtime/question files other than app.mts and the two fixed-origin templates remain byte-equal to assembled source; app.mts differs only by the existing tools export keyword.",
+    "docs": "README/FABRIC/landing updated; existing Skill copied unchanged",
+    "examples": "synthetic review candidates; no real provider replies",
+    "lock": "newly generated; deployed-lock bytes unavailable; byte equivalence NOT_ESTABLISHED",
+    "runtime_used_for_release_checks": "Node v22.23.3 and v24.19.0; 3 focused checks passed on each",
+    "package_lock_sha256": "4752c304fdf7c5932780f7a8ec614dbec96fcf75b4426d4ad2d163c6961e35bf",
+    "package_lock_v3": true,
+    "tool_metadata": "Export the existing runtime tools function for the offline distribution generator; preserve the original assembled app hash; prepared release app differs by export keyword only."
+  },
+  "license_status": "project-authored grant unresolved; R4 MIT not inherited",
+  "distribution": {
+    "public_repository": "https://github.com/Yuliasiris/jev-decision-fabric",
+    "ref": "refs/heads/main",
+    "release": null,
+    "repository_content_status": "43-file source published for inspection; project-authored reuse license unresolved",
+    "publication_performed": true,
+    "scope": "41 allowlisted payloads plus two generated identity files; no adaptive source, private artifact, live settings or credentials",
+    "not_claimed": [
+      "MIT grant",
+      "Directory listing",
+      "production redeploy",
+      "adaptive production completion",
+      "new provider or spending authorization"
+    ]
+  },
+  "files": [
+    {
+      "path": ".gitignore",
+      "assembled_sha256": "bcd8455ff1b4c77a8464c4da9712c54b99e63c911e747087ac629a712562ee41",
+      "release_sha256": "83b32b4706303bf541f77bbe61552ee3215e019e49e64c97755ef56af5ecbc0c",
+      "relationship": "distribution_secret_exclusions"
+    },
+    {
+      "path": "FABRIC.md",
+      "assembled_sha256": "898dfe28e61dd62331f5fd815ac170e55a607c46f2ff0cb993519823ff583290",
+      "release_sha256": "09b87c2906bb239057361358d31c052a4f01a225c3576912ea1def746dbfe05b",
+      "relationship": "current_public_documentation"
+    },
+    {
+      "path": "README.md",
+      "assembled_sha256": "be6215b4d9cab3ed0ae141c211489c7a5371f19917a0669b616cc50f6bb2afe1",
+      "release_sha256": "5b0956659d7262f92ef6772c837d433cb9eec145e3032310e3500fce691176e2",
+      "relationship": "current_public_documentation"
+    },
+    {
+      "path": "netlify/functions/api.mts",
+      "assembled_sha256": "ad195b496bd4310adc7d268c4fef6e40ea504179a48fce5c165c924c63ecce2a",
+      "release_sha256": "ad195b496bd4310adc7d268c4fef6e40ea504179a48fce5c165c924c63ecce2a",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "netlify/lib/app.mts",
+      "assembled_sha256": "3166510b6591aa2879cede06db5cbcde09dd562bfa9d96372869fb90b429d286",
+      "release_sha256": "86aeef0bc5bff80287241ce244b9a505a1c1b6d8783f52adc1ec0dd97705b25f",
+      "relationship": "existing tools metadata export only; handler/auth/provider logic unchanged"
+    },
+    {
+      "path": "netlify/lib/auth.mts",
+      "assembled_sha256": "96058e808f3f2a8cdf2df275469990046133731c2b323fac6d09ebc5232bb7be",
+      "release_sha256": "042ad3b66ebcc8e7be07723ba72780ee8686582aa943dbb91d30bf3e9fa87013",
+      "relationship": "fixed_origin_placeholder_only"
+    },
+    {
+      "path": "netlify/lib/decision-fabric.mts",
+      "assembled_sha256": "8c451f5af8896cfae2dbc37c4eb6f80cbfcf26e974b7ffc7a05b94feb800b16e",
+      "release_sha256": "8c451f5af8896cfae2dbc37c4eb6f80cbfcf26e974b7ffc7a05b94feb800b16e",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "netlify/lib/fabric-gateway.mts",
+      "assembled_sha256": "960eeffdc457b090dfd54974e0e3dd6a819312488101c3ac92a3f802db77395f",
+      "release_sha256": "960eeffdc457b090dfd54974e0e3dd6a819312488101c3ac92a3f802db77395f",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "netlify/lib/gateway.mts",
+      "assembled_sha256": "2224779478bace01eb87662ecc4177b13dafff30fa9c0debca62244e44326e0a",
+      "release_sha256": "2224779478bace01eb87662ecc4177b13dafff30fa9c0debca62244e44326e0a",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "netlify/lib/mcp_origin.mts",
+      "assembled_sha256": "a1344a2d8b0b7f43054bf317da995d9a72ac4d31f678ab12fbab3642a2cecb08",
+      "release_sha256": "f1d3a1ec9ac5ff06e0f50826fc845098240bc7490c0949648e4b6bf9238ff41f",
+      "relationship": "fixed_origin_placeholder_only"
+    },
+    {
+      "path": "netlify/lib/ops-questions.mts",
+      "assembled_sha256": "9fa935b9d7557f6b1d9e29287820bcc0ac767af2b433f84cd308514665ea9fc7",
+      "release_sha256": "9fa935b9d7557f6b1d9e29287820bcc0ac767af2b433f84cd308514665ea9fc7",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "netlify/lib/public-plan.mts",
+      "assembled_sha256": "fa80571a650ab47a0d0e20b35983e2cc686fdce83868c591c682f89991a02561",
+      "release_sha256": "fa80571a650ab47a0d0e20b35983e2cc686fdce83868c591c682f89991a02561",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "netlify/lib/questions.mts",
+      "assembled_sha256": "f74a503f9cb9aad11cd63f6d434006114890491074fe65744a744d965cfd5832",
+      "release_sha256": "f74a503f9cb9aad11cd63f6d434006114890491074fe65744a744d965cfd5832",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "netlify/lib/repair_release.mts",
+      "assembled_sha256": "58903de89a33c12febb1620ab880b0c9337738e5c392d10cedf5b7d8f70bfc2f",
+      "release_sha256": "58903de89a33c12febb1620ab880b0c9337738e5c392d10cedf5b7d8f70bfc2f",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "netlify/lib/store.mts",
+      "assembled_sha256": "5e49b942ff114cfba9871abd659d4f65f0c67739c38df25d76533e023666a178",
+      "release_sha256": "5e49b942ff114cfba9871abd659d4f65f0c67739c38df25d76533e023666a178",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "netlify.toml",
+      "assembled_sha256": "9ece48c79d08cd996712fd798dbae6e86eb400282549f68474c424b5a7b05315",
+      "release_sha256": "9ece48c79d08cd996712fd798dbae6e86eb400282549f68474c424b5a7b05315",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "package.json",
+      "assembled_sha256": "2b9af9dd408fc7418c8238207dde6a954ba4cef9d8a0c2887c3ac003414bc3ee",
+      "release_sha256": "2b9af9dd408fc7418c8238207dde6a954ba4cef9d8a0c2887c3ac003414bc3ee",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "public/index.html",
+      "assembled_sha256": "6f22a8d3456643f7c786e94d7b8bc51bddd37465cbe7e48c4f732fe0870abc76",
+      "release_sha256": "4a18622da36544aca186e7f63e84be9bad5f8496656e8a050c868a073ac1f24f",
+      "relationship": "public_landing_text"
+    },
+    {
+      "path": "public/style.css",
+      "assembled_sha256": "2058a558bef9109a5db49310a6304945647cd2ec50ef6cde1a2f4377357313d4",
+      "release_sha256": "2058a558bef9109a5db49310a6304945647cd2ec50ef6cde1a2f4377357313d4",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "skills/decision-fabric/SKILL.md",
+      "assembled_sha256": "f86daec763c97f6c1eb5e04f3bb7ae1b28a77a59b40d56a883e17422c010d75d",
+      "release_sha256": "f86daec763c97f6c1eb5e04f3bb7ae1b28a77a59b40d56a883e17422c010d75d",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "test/auth.test.mts",
+      "assembled_sha256": "74928ee9b7ae1dce4897b4d247d0aa05277115ba932e2b76dc0e195178b0d488",
+      "release_sha256": "74928ee9b7ae1dce4897b4d247d0aa05277115ba932e2b76dc0e195178b0d488",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "test/fabric.test.mts",
+      "assembled_sha256": "66cc274558bc404cb92b1bb8286ef14d8ac95dc7575084fe25c73fa169bb877f",
+      "release_sha256": "66cc274558bc404cb92b1bb8286ef14d8ac95dc7575084fe25c73fa169bb877f",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "test/gateway.test.mts",
+      "assembled_sha256": "16874dcbdfb111facbbe1a6ff40303e95f10ad2d5280cfd8477ec435151de3d0",
+      "release_sha256": "16874dcbdfb111facbbe1a6ff40303e95f10ad2d5280cfd8477ec435151de3d0",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "test/resume.test.mts",
+      "assembled_sha256": "59a0f5e66974dafbf13e72d25cdb53c8ab9a0e8a7bb6615a322af3ee87ed32e5",
+      "release_sha256": "59a0f5e66974dafbf13e72d25cdb53c8ab9a0e8a7bb6615a322af3ee87ed32e5",
+      "relationship": "byte_equal_to_assembled_source"
+    },
+    {
+      "path": "test/transport.test.mts",
+      "assembled_sha256": "a8d5959cc7a8bb26d4046f6f850fd09167340aa1199bcbd37888dd5315d217e2",
+      "release_sha256": "a8d5959cc7a8bb26d4046f6f850fd09167340aa1199bcbd37888dd5315d217e2",
+      "relationship": "byte_equal_to_assembled_source"
+    }
+  ]
+}

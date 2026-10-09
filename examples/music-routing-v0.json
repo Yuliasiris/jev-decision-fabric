@@ -1,0 +1,26 @@
+{
+  "question_set": "music-routing-v0",
+  "state": {
+    "fixture": true,
+    "source": {
+      "id": "demo-phrase",
+      "revision": "r1",
+      "range": "bars 1–2"
+    },
+    "intent": {
+      "request": "旋律を変えず、和音の響きが違う二案を比較したい",
+      "preserve": [
+        "melody",
+        "lyrics",
+        "tempo"
+      ]
+    },
+    "observations": {
+      "symbolic_melody_available": true,
+      "analysis_revision": "r1",
+      "audio_was_listened_to": false,
+      "playable_candidates_available": false,
+      "candidate_generation_required": true
+    }
+  }
+}

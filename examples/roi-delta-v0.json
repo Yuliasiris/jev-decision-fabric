@@ -1,0 +1,26 @@
+{
+  "question_set": "roi-delta-v0",
+  "state": {
+    "fixture": true,
+    "race_ref": "DEMO_ONLY",
+    "as_of": "2026-10-01T09:00:00+09:00",
+    "previous_assumptions": {
+      "condition": "not supplied",
+      "pace": "not supplied",
+      "market": "not supplied"
+    },
+    "changed_facts": [
+      {
+        "field": "runner_status",
+        "runner_id": "demo-07",
+        "old": "entered",
+        "new": "withdrawn",
+        "observed_at": "2026-10-01T08:58:00+09:00"
+      }
+    ],
+    "dependency_context": {
+      "pace": "A prior scenario explicitly depended on demo-07 taking an early lead.",
+      "other_analyses": "Not supplied; do not infer unaffected."
+    }
+  }
+}

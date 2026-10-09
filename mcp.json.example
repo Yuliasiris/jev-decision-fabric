@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "jev-decision-fabric": {
+      "url": "https://your-service.example/mcp"
+    }
+  }
+}

@@ -1,0 +1,229 @@
+{
+  "schema": "jev.public-source-allowlist.v1",
+  "state": "PUBLISHED_SOURCE_ONLY_LICENSE_PENDING",
+  "files": [
+    {
+      "path": ".env.example",
+      "bytes": 288,
+      "sha256": "5d9b28abb7fa2e60ae0eb68e54d41caca9c1cbec182615c6401a03eb2e8eb27d"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 65,
+      "sha256": "83b32b4706303bf541f77bbe61552ee3215e019e49e64c97755ef56af5ecbc0c"
+    },
+    {
+      "path": "FABRIC.md",
+      "bytes": 9083,
+      "sha256": "09b87c2906bb239057361358d31c052a4f01a225c3576912ea1def746dbfe05b"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 532,
+      "sha256": "792284ad3bbcc8735522383b8e9cac80c1532bc0a9195e73f19faa7e6d69e78e"
+    },
+    {
+      "path": "NOTICE.md",
+      "bytes": 1504,
+      "sha256": "38b3aa5c193b48384c4fe6e3c6f0b922ea48b8aad4402da241edf316c0e03e37"
+    },
+    {
+      "path": "PROVENANCE.json",
+      "bytes": 10080,
+      "sha256": "1bf42b8af63a7b38f9727b683c6a43d5c1fe4634b9c6a9041be70c8fd57d86e8"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5638,
+      "sha256": "5b0956659d7262f92ef6772c837d433cb9eec145e3032310e3500fce691176e2"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 1061,
+      "sha256": "28e7862076b615558070faea5e74363893f914472310840a14adfaa714719f50"
+    },
+    {
+      "path": "THIRD_PARTY_DEPENDENCIES.json",
+      "bytes": 162176,
+      "sha256": "ab7d9ec8e0ae1ec8f7f32e96e9017db2f49e8ce81b48ff2b892167058e3a6832"
+    },
+    {
+      "path": "examples/decision_run_v1.single.json",
+      "bytes": 869,
+      "sha256": "702c8a7156c1384a1725e5355940db31645507ec9164846b17da0364c7560506"
+    },
+    {
+      "path": "examples/music-routing-v0.json",
+      "bytes": 605,
+      "sha256": "85c0fea05440aec31c6b2d48223d39540da6356ae06b390e43416e053f3b69de"
+    },
+    {
+      "path": "examples/offline.mts",
+      "bytes": 2877,
+      "sha256": "cb0f4defd6ecaaeb383739ef3d3843d09b5883f68493979e9ae436e90c29f68a"
+    },
+    {
+      "path": "examples/ops-liveness-v0.json",
+      "bytes": 527,
+      "sha256": "fd1108c0de421b6d0c55583b0d174fd2da66a045d503cd78c75fdc32ab1cbf1f"
+    },
+    {
+      "path": "examples/roi-delta-v0.json",
+      "bytes": 683,
+      "sha256": "8f765aacd97f7ff9151a4516647784f02ece8280b04f67fdc57d42450b8ceb0d"
+    },
+    {
+      "path": "mcp.json.example",
+      "bytes": 109,
+      "sha256": "3ec249e02746c493b2e164c4eeccdc8913bde749ab6ba50606cf8aad667e4b3d"
+    },
+    {
+      "path": "netlify/functions/api.mts",
+      "bytes": 376,
+      "sha256": "ad195b496bd4310adc7d268c4fef6e40ea504179a48fce5c165c924c63ecce2a"
+    },
+    {
+      "path": "netlify/lib/app.mts",
+      "bytes": 9869,
+      "sha256": "86aeef0bc5bff80287241ce244b9a505a1c1b6d8783f52adc1ec0dd97705b25f"
+    },
+    {
+      "path": "netlify/lib/auth.mts",
+      "bytes": 20786,
+      "sha256": "042ad3b66ebcc8e7be07723ba72780ee8686582aa943dbb91d30bf3e9fa87013"
+    },
+    {
+      "path": "netlify/lib/decision-fabric.mts",
+      "bytes": 30238,
+      "sha256": "8c451f5af8896cfae2dbc37c4eb6f80cbfcf26e974b7ffc7a05b94feb800b16e"
+    },
+    {
+      "path": "netlify/lib/fabric-gateway.mts",
+      "bytes": 5321,
+      "sha256": "960eeffdc457b090dfd54974e0e3dd6a819312488101c3ac92a3f802db77395f"
+    },
+    {
+      "path": "netlify/lib/gateway.mts",
+      "bytes": 12872,
+      "sha256": "2224779478bace01eb87662ecc4177b13dafff30fa9c0debca62244e44326e0a"
+    },
+    {
+      "path": "netlify/lib/mcp_origin.mts",
+      "bytes": 1219,
+      "sha256": "f1d3a1ec9ac5ff06e0f50826fc845098240bc7490c0949648e4b6bf9238ff41f"
+    },
+    {
+      "path": "netlify/lib/ops-questions.mts",
+      "bytes": 10793,
+      "sha256": "9fa935b9d7557f6b1d9e29287820bcc0ac767af2b433f84cd308514665ea9fc7"
+    },
+    {
+      "path": "netlify/lib/public-plan.mts",
+      "bytes": 7728,
+      "sha256": "fa80571a650ab47a0d0e20b35983e2cc686fdce83868c591c682f89991a02561"
+    },
+    {
+      "path": "netlify/lib/questions.mts",
+      "bytes": 5604,
+      "sha256": "f74a503f9cb9aad11cd63f6d434006114890491074fe65744a744d965cfd5832"
+    },
+    {
+      "path": "netlify/lib/repair_release.mts",
+      "bytes": 59,
+      "sha256": "58903de89a33c12febb1620ab880b0c9337738e5c392d10cedf5b7d8f70bfc2f"
+    },
+    {
+      "path": "netlify/lib/store.mts",
+      "bytes": 774,
+      "sha256": "5e49b942ff114cfba9871abd659d4f65f0c67739c38df25d76533e023666a178"
+    },
+    {
+      "path": "netlify.toml",
+      "bytes": 167,
+      "sha256": "9ece48c79d08cd996712fd798dbae6e86eb400282549f68474c424b5a7b05315"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 241648,
+      "sha256": "4752c304fdf7c5932780f7a8ec614dbec96fcf75b4426d4ad2d163c6961e35bf"
+    },
+    {
+      "path": "package.json",
+      "bytes": 338,
+      "sha256": "2b9af9dd408fc7418c8238207dde6a954ba4cef9d8a0c2887c3ac003414bc3ee"
+    },
+    {
+      "path": "public/index.html",
+      "bytes": 603,
+      "sha256": "4a18622da36544aca186e7f63e84be9bad5f8496656e8a050c868a073ac1f24f"
+    },
+    {
+      "path": "public/style.css",
+      "bytes": 413,
+      "sha256": "2058a558bef9109a5db49310a6304945647cd2ec50ef6cde1a2f4377357313d4"
+    },
+    {
+      "path": "scripts/configure-origin.mjs",
+      "bytes": 999,
+      "sha256": "ff4c3912a35aef91935db44027cf1d266b20bb4fd2bd3957fbba852bd5cad031"
+    },
+    {
+      "path": "scripts/tool-metadata.mts",
+      "bytes": 490,
+      "sha256": "4380241d2e66e80761322b6cdd9eb650364782992b1bf904b44552310647fbc6"
+    },
+    {
+      "path": "skills/decision-fabric/SKILL.md",
+      "bytes": 3840,
+      "sha256": "f86daec763c97f6c1eb5e04f3bb7ae1b28a77a59b40d56a883e17422c010d75d"
+    },
+    {
+      "path": "test/auth.test.mts",
+      "bytes": 23546,
+      "sha256": "74928ee9b7ae1dce4897b4d247d0aa05277115ba932e2b76dc0e195178b0d488"
+    },
+    {
+      "path": "test/fabric.test.mts",
+      "bytes": 26547,
+      "sha256": "66cc274558bc404cb92b1bb8286ef14d8ac95dc7575084fe25c73fa169bb877f"
+    },
+    {
+      "path": "test/gateway.test.mts",
+      "bytes": 8114,
+      "sha256": "16874dcbdfb111facbbe1a6ff40303e95f10ad2d5280cfd8477ec435151de3d0"
+    },
+    {
+      "path": "test/release.test.mts",
+      "bytes": 3415,
+      "sha256": "bd11ef46c7e71fb30a50e19df912c76ba8755bc1f36b100d0bbe332fd61bf192"
+    },
+    {
+      "path": "test/resume.test.mts",
+      "bytes": 19002,
+      "sha256": "59a0f5e66974dafbf13e72d25cdb53c8ab9a0e8a7bb6615a322af3ee87ed32e5"
+    },
+    {
+      "path": "test/transport.test.mts",
+      "bytes": 1213,
+      "sha256": "a8d5959cc7a8bb26d4046f6f850fd09167340aa1199bcbd37888dd5315d217e2"
+    }
+  ],
+  "generated_metadata": [
+    "PUBLIC_ALLOWLIST.json",
+    "SOURCE_MANIFEST.sha256"
+  ],
+  "excluded": [
+    "node_modules",
+    "private raw/corpus",
+    "character Source",
+    "conversation transcripts",
+    "owner credentials",
+    "activation/probe values",
+    "temporary envelopes",
+    "site operation values",
+    "unnecessary private repository references",
+    "research datasets",
+    "model weights",
+    "training data"
+  ]
+}
