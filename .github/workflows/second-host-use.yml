@@ -48,9 +48,9 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           npm run build:sdk
           mkdir ../distribution
-          npm pack --ignore-scripts --json --pack-destination ../distribution > ../pack.json
-      - name: Receive real public-sample work through the installed consumer
-        run: node caller/ci/second-host-use.mjs public-source pack.json distribution second-caller-evidence
+          npm pack --ignore-scripts --foreground-scripts=false --json --pack-destination ../distribution > ../pack.json
+      - name: Diagnose the changed caller prefix without SDK admission
+        run: node caller/ci/second-host-use.mjs public-source pack.json distribution second-caller-evidence --preflight-only
       - name: Return the original result, raw operations and saved archive
         id: archive
         if: always()
@@ -72,7 +72,6 @@ jobs:
         if: always() && steps.archive.outcome == 'success'
         env:
           ARTIFACT_ID: ${{ steps.archive.outputs.artifact-id }}
-          ARTIFACT_URL: ${{ steps.archive.outputs.artifact-url }}
           ARTIFACT_DIGEST: ${{ steps.archive.outputs.artifact-digest }}
         run: |
-          node -e 'console.log(JSON.stringify({artifact_id:process.env.ARTIFACT_ID,artifact_url:process.env.ARTIFACT_URL,artifact_digest:process.env.ARTIFACT_DIGEST,scope:"GitHub platform receipt; Root independently reads it before adoption"}))'
+          node -e 'console.log("JEV_SECOND_CALLER_PLATFORM_ARTIFACT "+JSON.stringify({artifact_id:process.env.ARTIFACT_ID,artifact_digest:process.env.ARTIFACT_DIGEST,archive_binary_download_verified:false,scope:"Platform metadata readback and job result are separate from archive blob readback"}))'

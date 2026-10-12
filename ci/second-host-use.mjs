@@ -10,8 +10,9 @@ const SOURCE = '8564d529fca55f5be4683ec53c05348ac71e5729';
 const VERSION = '0.4.0-preview.6';
 const LOCK = '0917885a5f08b19251f85985a4d62dd8b65a7885aa1ecbca6b5ade6fb8bbc266';
 const [sourceArg,packArg,distributionArg,evidenceArg,...extra] = process.argv.slice(2);
+const preflightOnly=extra.length===1&&extra[0]==='--preflight-only';
 const demand=(ok,code)=>{if(!ok)throw Error(code);};
-demand(sourceArg&&packArg&&distributionArg&&evidenceArg&&extra.length===0,'CALLER_ARGUMENTS_REQUIRED');
+demand(sourceArg&&packArg&&distributionArg&&evidenceArg&&(extra.length===0||preflightOnly),'CALLER_ARGUMENTS_REQUIRED');
 const source=resolve(sourceArg),packPath=resolve(packArg),distribution=resolve(distributionArg),evidence=resolve(evidenceArg);
 const sha=raw=>createHash('sha256').update(raw).digest('hex');
 const json=path=>JSON.parse(readFileSync(path,'utf8'));
@@ -19,6 +20,27 @@ const save=(path,value)=>{mkdirSync(dirname(path),{recursive:true});writeFileSyn
 const identity=path=>{const raw=readFileSync(path),s=statSync(path,{bigint:true});return {bytes:raw.length,sha256:sha(raw),mtime_ns:String(s.mtimeNs)};};
 const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const commands=[];
+let stage='PREFLIGHT_DIAGNOSTICS',admissionAttempted=false;
+const safeCode=value=>typeof value==='string'&&/^[A-Z_0-9]+$/.test(value)?value:'CALLER_CHECK_FAILED';
+const safeLabel=value=>typeof value==='string'&&/^[A-Za-z0-9_.-]{1,100}$/.test(value)?value:null;
+const safePath=value=>typeof value==='string'&&/^[A-Za-z0-9_./-]{1,300}$/.test(value)&&!value.startsWith('/')&&!value.split('/').includes('..')?value:null;
+const marker=(kind,value)=>console.log('JEV_SECOND_CALLER_'+kind+' '+JSON.stringify(value));
+function prefixDiagnostics(){
+  const result={mode:preflightOnly?'preflight_only':'actual_use',actual_node:safeLabel(process.version),expected_node:'v22.13.0',
+    expected_source_commit:SOURCE,expected_version:VERSION,expected_source_lock_sha256:LOCK,expected_package_files:137,
+    source_lock_sha256:null,source_lock_read_error:null,package_version:null,package_read_error:null,
+    pack_json_bytes:null,pack_json_sha256:null,pack_records:null,pack_version:null,pack_name:null,pack_filename:null,pack_bytes:null,pack_files_count:null,pack_files:null,pack_read_error:null,
+    admission_attempted:false,C0_operations_started:0};
+  try{result.source_lock_sha256=sha(readFileSync(join(source,'package-lock.json')));}catch(e){result.source_lock_read_error=safeCode(e.code);}
+  try{result.package_version=safeLabel(json(join(source,'package.json')).version);}catch(e){result.package_read_error=safeCode(e.code);}
+  try{const raw=readFileSync(packPath);result.pack_json_bytes=raw.length;result.pack_json_sha256=sha(raw);const packed=JSON.parse(raw);result.pack_records=Array.isArray(packed)?packed.length:null;
+    result.pack_version=safeLabel(packed?.[0]?.version);result.pack_name=safeLabel(packed?.[0]?.name);
+    result.pack_filename=safeLabel(packed?.[0]?.filename);result.pack_bytes=Number.isSafeInteger(packed?.[0]?.size)?packed[0].size:null;
+    result.pack_files_count=Array.isArray(packed?.[0]?.files)?packed[0].files.length:null;
+    result.pack_files=Array.isArray(packed?.[0]?.files)?packed[0].files.map(x=>({path:safePath(x?.path),bytes:Number.isSafeInteger(x?.size)?x.size:null})):null;
+  }catch(e){result.pack_read_error=e instanceof SyntaxError?'PACK_JSON_INVALID':safeCode(e.code);}
+  save(join(evidence,'preflight.json'),result);marker('PREFLIGHT',result);
+}
 const cleanEnv={PATH:process.env.PATH??'',LANG:'C.UTF-8',NPM_CONFIG_AUDIT:'false',NPM_CONFIG_FUND:'false',NPM_CONFIG_CACHE:join(evidence,'npm-cache'),
   NPM_CONFIG_USERCONFIG:join(evidence,'npm-config/empty-user.npmrc'),NPM_CONFIG_GLOBALCONFIG:join(evidence,'npm-config/empty-global.npmrc')};
 // Preserve platform network/CA configuration without printing or archiving its values.
@@ -44,19 +66,30 @@ function tuples(lock,omitProject=false){return Object.entries(lock.packages).fil
 mkdirSync(evidence,{recursive:false});
 let status='FAILED';
 try{
+  prefixDiagnostics();stage='CALLER_CONTEXT';
   demand(process.env.GITHUB_ACTIONS==='true'&&process.env.GITHUB_REPOSITORY==='Yuliasiris/jev-decision-fabric'&&
     process.env.GITHUB_REF==='refs/heads/p0/second-host-use-20261013','EXISTING_GITHUB_CALLER_CONTEXT_REQUIRED');
   demand(process.version==='v22.13.0','FIXED_NODE_RUNTIME_REQUIRED');
   demand(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA??''),'CALLER_COMMIT_REQUIRED');
   const caller=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+  stage='CALLER_COMMIT';
   demand(run('caller-source-head','git',['rev-parse','HEAD'],caller).trim()===process.env.GITHUB_SHA,'CALLER_COMMIT_MISMATCH');
   const harness=identity(fileURLToPath(import.meta.url)),workflow=identity(join(caller,'.github/workflows/second-host-use.yml'));
   mkdirSync(join(evidence,'npm-config'));for(const key of ['NPM_CONFIG_USERCONFIG','NPM_CONFIG_GLOBALCONFIG'])writeFileSync(cleanEnv[key],'',{flag:'wx'});
+  stage='PUBLIC_SOURCE_COMMIT';
   const head=run('public-source-head','git',['rev-parse','HEAD'],source).trim();demand(head===SOURCE,'SOURCE_COMMIT_MISMATCH');
+  stage='PUBLIC_VERSION_LOCK';
   const sourceLockBytes=readFileSync(join(source,'package-lock.json')),sourceLock=JSON.parse(sourceLockBytes),pkg=json(join(source,'package.json'));
   demand(pkg.version===VERSION&&sha(sourceLockBytes)===LOCK,'PUBLIC_VERSION_LOCK_MISMATCH');
+  stage='PUBLIC_PACKAGE_IDENTITY';
   const packed=json(packPath);demand(packed.length===1&&packed[0].name==='jev-decision-fabric'&&packed[0].version===VERSION&&packed[0].files.length===137,'PUBLIC_PACKAGE_IDENTITY');
+  stage='PUBLIC_TARBALL_NAME';
   demand(packed[0].filename==='jev-decision-fabric-'+VERSION+'.tgz','PUBLIC_TARBALL_NAME');
+  if(preflightOnly){
+    status='PREFLIGHT_PASS_ONLY';save(join(evidence,'preflight-result.json'),{status,stage,source_commit:SOURCE,version:VERSION,admission_attempted:false,C0_operations_started:0,source_runtime_executed:false});
+    marker('PREFLIGHT_RESULT',json(join(evidence,'preflight-result.json')));
+  }else{
+  stage='PUBLIC_DISTRIBUTION_COPY';
   const tarball=join(distribution,packed[0].filename),tarIdentity=identity(tarball);
   copyFileSync(tarball,join(evidence,'built-package.tgz'));copyFileSync(packPath,join(evidence,'pack-result.json'));
   writeFileSync(join(evidence,'source-lock.json'),sourceLockBytes);
@@ -66,8 +99,10 @@ try{
   const overrides={};for(const t of sourceTuples){demand(t.version&&t.integrity&&new URL(t.resolved).hostname==='registry.npmjs.org','PUBLIC_DEPENDENCY_ORIGIN');
     demand(!overrides[t.name]||overrides[t.name]===t.version,'MULTIPLE_RUNTIME_VERSION_REQUIRES_SCOPED_BINDING');overrides[t.name]=t.version;}
   const consumerPackage=json(join(consumer,'package.json'));consumerPackage.overrides=overrides;save(join(consumer,'package.json'),consumerPackage);
+  stage='NORMAL_PACKAGE_INSTALL';
   run('install','npm',['install','--ignore-scripts','--no-audit','--no-fund',tarball],consumer,120000);
   demand(equal(tuples(json(join(consumer,'package-lock.json')),true),sourceTuples),'INSTALLED_RUNTIME_TUPLES_DIFFER');
+  stage='INSTALLED_PROJECT_BYTES';
   const installed=join(consumer,'node_modules/jev-decision-fabric'),projectFiles=[];
   for(const entry of packed[0].files){demand(!entry.path.startsWith('/')&&!entry.path.split('/').includes('..'),'PUBLIC_PACKAGE_PATH');
     const origin=join(source,entry.path),actual=join(installed,entry.path);demand(!lstatSync(actual).isSymbolicLink()&&readFileSync(origin).equals(readFileSync(actual)),'INSTALLED_PROJECT_BYTES_DIFFER');
@@ -76,7 +111,9 @@ try{
   demand(readFileSync(sample).equals(readFileSync(join(source,'consumers/csv-audit/sample.csv'))),'PUBLIC_SAMPLE_BYTES_DIFFER');
   copyFileSync(sample,join(evidence,'sample-input.csv'));
   const state=join(evidence,'owned-state'),entry=join(consumer,'index.mjs');
-  const invoke=(name,args)=>{const raw=run(name,process.execPath,[entry,...args],consumer);const result=JSON.parse(raw);save(join(evidence,name+'.received.json'),result);return result;};
+  const invoke=(name,args)=>{stage='CONSUMER_'+name.toUpperCase();const raw=run(name,process.execPath,[entry,...args],consumer);const result=JSON.parse(raw);save(join(evidence,name+'.received.json'),result);
+    marker('RECEIVED',{operation:name,projection:'actual public sample consumer stdout; raw record retained unchanged in artifact',record:result});return result;};
+  admissionAttempted=true;
   const paused=invoke('start',['--request','Audit this CSV and total the amount column','--file',sample,'--column','amount','--unit','USD','--state',state,'--pause-after-read']);
   demand(paused.state==='PAUSED'&&paused.delivery==='current_operation','SAVED_PAUSE_REQUIRED');
   const readObservation=paused.accepted_observations.filter(x=>x.task_id==='read-csv');
@@ -112,12 +149,20 @@ try{
     input:{kind:'Public README sample CSV only',...sourceSample},run_id:paused.run_id,original_admission:originalAdmission,original_budget:originalBudget,
     accepted_original_read:readObservation[0],original_meta_file:admissionIdentity,
     original_read_attempt_unchanged:true,status_archive_bytes_sha_mtime_unchanged:true,paused_archive:originalState,completed_archive:finishedState,
-    answer:completed.result.answer,provenance:completed.result.provenance,qualification:{actual_file_IO:true,planner_final:'scripted',Jev_native_paid_calls:0,J1_complete:false,whole_Goal_complete:false,second_caller_requires_external_workflow_and_artifact_readback:true},
+    answer:completed.result.answer,provenance:completed.result.provenance,qualification:{actual_file_IO:true,planner_final:'scripted',Jev_native_paid_calls:0,J1_complete:false,whole_Goal_complete:false,external_job_result_readback_required:true,archive_binary_download_verified:false,job_result_and_archive_binary_are_separate:true},
     retry_count:0,source_runtime_modified:false,new_secret_key_contract_or_service:false});
   status='PASS';
-}catch(error){save(join(evidence,'failure.json'),{status:'UNCONFIRMED_NO_RETRY',error:typeof error?.message==='string'&&/^[A-Z_]+$/.test(error.message)?error.message:'CALLER_CHECK_FAILED',source_commit:SOURCE,new_native_paid_calls:0,automatic_retry:false});}
+  const receipt=json(join(evidence,'receipt.json'));marker('RECEIPT',{status:receipt.status,source_commit:SOURCE,version:VERSION,source_lock_sha256:LOCK,
+    run_id:receipt.run_id,original_admission:receipt.original_admission,original_budget:receipt.original_budget,accepted_original_read:receipt.accepted_original_read,
+    original_read_attempt_unchanged:receipt.original_read_attempt_unchanged,status_archive_bytes_sha_mtime_unchanged:receipt.status_archive_bytes_sha_mtime_unchanged,
+    answer:receipt.answer,provenance:receipt.provenance,harness_sha256:receipt.caller.harness.sha256,workflow_sha256:receipt.caller.workflow.sha256,
+    qualification:receipt.qualification,artifact_receipt_sha256:sha(readFileSync(join(evidence,'receipt.json'))),archive_binary_download_verified:false});
+  }
+}catch(error){status='FAILED';const failure={status:'UNCONFIRMED_NO_RETRY',error:safeCode(error?.message),stage,mode:preflightOnly?'preflight_only':'actual_use',
+    admission_attempted:admissionAttempted,C0_operations_started:admissionAttempted?null:0,source_commit:SOURCE,new_native_paid_calls:0,automatic_retry:false};
+  save(join(evidence,'failure.json'),failure);marker('FAILURE',failure);}
 // Upload only public sample/results and original archive, never dependencies/cache or credentials.
 const manifest=files(evidence,['consumer','npm-cache','npm-config']);
 save(join(evidence,'public-artifact-files.json'),manifest);
-console.log(JSON.stringify({status,evidence:'second-caller-evidence',scope:'actual caller receipt only after Root verifies the external workflow run/artifact; scripted/native0'}));
-if(status!=='PASS')process.exitCode=1;
+console.log(JSON.stringify({status,evidence:'second-caller-evidence',scope:'Job/result readback and archive blob readback are separate; scripted/native0'}));
+if(status!=='PASS'&&status!=='PREFLIGHT_PASS_ONLY')process.exitCode=1;
