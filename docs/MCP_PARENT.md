@@ -134,6 +134,15 @@ changes host state or authorizes an effect. Command arguments are shell-quoted;
 the example's displayed commands use POSIX shell syntax. Original budgets and
 deadline remain with the host, and unavailable remaining limits are not invented.
 
+Human views do not print executable commands when any original receipt-path or
+program argument contains C0/C1 terminal controls or Unicode line/paragraph
+separators. They explicitly explain that a command is withheld. Displayed values
+use reading escapes; those escapes are not replacement OS paths and must not be
+copied as a renamed receipt or program. The exact original path, file bytes,
+request ID and machine JSON remain unchanged. Use the original values through a
+trusted caller/machine JSON workflow. Ordinary spaces, apostrophes and other
+control-free Unicode still receive the same lossless POSIX shell quoting.
+
 Run only the focused new client regression with:
 
 ~~~sh

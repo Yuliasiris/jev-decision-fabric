@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,readFileSync,existsSync,statSync,rmSync} from 'node:fs';
+import {mkdtempSync,readFileSync,existsSync,statSync,rmSync,writeFileSync,mkdirSync,copyFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
@@ -11,7 +11,7 @@ import {createWorkMcpHandler} from '../mcp/work.mts';
 import type {HostWorkService} from '../mcp/work.mts';
 import {inspectParentReceipt,runParentOperation,ParentClientError} from '../../examples/work-parent.mts';
 import type {ParentTransport,ParentMessage} from '../../examples/work-parent.mts';
-import {renderParentText,renderParentError} from '../../examples/work-parent-view.mts';
+import {renderParentText,renderParentError,renderParentHelp} from '../../examples/work-parent-view.mts';
 const root=resolve(fileURLToPath(new URL('../..',import.meta.url)));
 const request='Compare the available documents.';
 const answer='TEST_ONLY answer from the original host result.';
@@ -149,4 +149,59 @@ test('pure error view and text sanitization retain safe inspect guidance without
     next_operation:'none',result:{...result,answer:'Answer\u001b[31m\rspoof'},client_journal_sha256:'test',result_is_cached:false,
     delivery:'transport_operation',current_operation:{operation:'status',disposition:'verified',error:null,transport_closed:true},qualification:'client projection only; actual host origins and effects require their own evidence'};
   const text=renderParentText(message);assert.match(text,/Answer\\u001b\[31m\\u000dspoof/);assert.doesNotMatch(text,/\u001b|\r/);
+});
+test('complete command arguments with terminal controls are withheld, not escaped into another executable path',async t=>{
+  const f=fixture(t),binding=connection();
+  const message=await runParentOperation({receiptPath:f.receipt,operation:'start',request,stateDirectory:f.state,connect:binding.connect});
+  const inspection=inspectParentReceipt(f.receipt),unsafe=/[\u0000-\u0008\u000b-\u001f\u007f-\u009f\u2028\u2029]/;
+  for(const character of ['\n','\t','\u0000','\u001b','\u007f','\u0085','\u009b','\u2028','\u2029']){
+    const path='original'+character+'receipt.json';
+    const receiptContext={receiptPath:path,command:['node','client.mjs'],journal:inspection.journal};
+    for(const text of [renderParentText(message,receiptContext),renderParentError(new ParentClientError('PARENT_RECONCILIATION_REQUIRED'),receiptContext)]){
+      assert.match(text,/No executable command is shown/);assert.match(text,/not replacement paths/);
+      assert.doesNotMatch(text,unsafe);assert.doesNotMatch(text,/--receipt|--operation (inspect|status|continue)/);
+      assert.doesNotMatch(text,/no saved receipt path/);
+    }
+    const prefixContext={receiptPath:f.receipt,command:['node','install'+character+'client.mjs'],journal:inspection.journal};
+    for(const text of [renderParentText(message,prefixContext),renderParentError(new ParentClientError('PARENT_RECONCILIATION_REQUIRED'),prefixContext),renderParentHelp(prefixContext)]){
+      assert.match(text,/No executable command is shown/);assert.doesNotMatch(text,unsafe);
+      assert.doesNotMatch(text,/--receipt|--operation (inspect|status|continue)/);
+    }
+  }
+  const body={...message,result:{...message.result!,answer:'Keep\nordinary\tformat; C1:\u009b31m; LS:\u2028; PS:\u2029'}};
+  const safe=renderParentText(body);assert.match(safe,/Keep\nordinary\tformat/);
+  assert.match(safe,/C1:\\u009b31m; LS:\\u2028; PS:\\u2029/);assert.doesNotMatch(safe,unsafe);
+  assert.equal(body.result.answer,'Keep\nordinary\tformat; C1:\u009b31m; LS:\u2028; PS:\u2029');
+  const normal=renderParentText(message,context(f.receipt,inspection.journal));
+  assert.match(normal,/--operation inspect --format text/);assert.ok(normal.includes("'\\''original'\\''"));
+  const literal=renderParentError(new ParentClientError('PARENT_RECEIPT_NOT_FOUND'),{receiptPath:'/tmp/literal-\\u000a.json'});
+  assert.match(literal,/--receipt '\/tmp\/literal-\\u000a.json'/);assert.doesNotMatch(literal,/No executable command is shown/);
+  assert.equal(binding.connections(),1);
+});
+test('actual CLI preserves control-bearing receipt bytes and JSON while text/error suppress every executable hint',async t=>{
+  const f=fixture(t),binding=connection();await runParentOperation({receiptPath:f.receipt,operation:'start',request,stateDirectory:f.state,connect:binding.connect});
+  const bytes=readFileSync(f.receipt),path=join(f.directory,'receipt\n\u001b[31m\u0085\u2028.json');writeFileSync(path,bytes);
+  const shadow=join(f.directory,'receipt\\u000a\\u001b[31m\\u0085\\u2028.json');writeFileSync(shadow,'different existing path; do not target it');
+  const mtime=statSync(path).mtimeMs,jsonBefore=cli(['--receipt',path,'--operation','inspect']);assert.equal(jsonBefore.status,0,jsonBefore.stderr);
+  const text=cli(['--receipt',path,'--operation','inspect','--format','text']);assert.equal(text.status,0,text.stderr);
+  assert.match(text.stdout,/No executable command is shown/);assert.match(text.stdout,/Receipt: .*\\u000a\\u001b\[31m\\u0085\\u2028.json/);
+  assert.doesNotMatch(text.stdout,/[\u001b\u007f-\u009f\u2028\u2029]/);assert.doesNotMatch(text.stdout,/--receipt|--operation (inspect|status|continue)/);
+  const error=cli(['--receipt',path+'.absent','--operation','inspect','--format','text']);assert.equal(error.status,1);
+  assert.match(error.stderr,/No executable command is shown/);assert.doesNotMatch(error.stderr,/[\u001b\u007f-\u009f\u2028\u2029]/);
+  assert.doesNotMatch(error.stderr,/--receipt|--operation (inspect|status|continue)/);
+  const jsonAfter=cli(['--receipt',path,'--operation','inspect']);assert.equal(jsonAfter.status,0,jsonAfter.stderr);
+  assert.equal(jsonAfter.stdout,jsonBefore.stdout);assert.deepEqual(readFileSync(path),bytes);assert.equal(statSync(path).mtimeMs,mtime);
+  assert.equal(readFileSync(shadow,'utf8'),'different existing path; do not target it');assert.equal(existsSync(f.state),false);
+});
+test('actual help from a control-bearing install path refuses the full program without losing normal help',t=>{
+  const f=fixture(t),prefix=join(f.directory,'install\n\u001b[31m\u0085\u2028');
+  for(const relative of ['examples/work-parent.mts','examples/work-parent-view.mts','adaptive/src/controller.mts','adaptive/contract/c0.mts','adaptive/contract/checkpoint-v1.mts']){
+    const destination=join(prefix,relative);mkdirSync(resolve(destination,'..'),{recursive:true});copyFileSync(join(root,relative),destination);
+  }
+  const actual=spawnSync(process.execPath,['--experimental-strip-types',join(prefix,'examples/work-parent.mts'),'--help'],
+    {env:{PATH:process.env.PATH??''},encoding:'utf8',timeout:15000});
+  assert.equal(actual.status,0,actual.stderr);assert.match(actual.stdout,/No executable command is shown/);
+  assert.doesNotMatch(actual.stdout,/[\u001b\u007f-\u009f\u2028\u2029]/);assert.doesNotMatch(actual.stdout,/--receipt|--operation (inspect|status|continue)/);
+  const normal=cli(['--help']);assert.equal(normal.status,0,normal.stderr);assert.match(normal.stdout,/--operation inspect --format text/);
+  assert.doesNotMatch(normal.stdout,/No executable command is shown/);assert.equal(existsSync(f.state),false);
 });

@@ -2,7 +2,7 @@
 import {createWork, restoreWork, SDK_VERSION} from 'jev-decision-fabric';
 import {CONTRACT_VERSION} from 'jev-decision-fabric/contract';
 import {digest} from 'jev-decision-fabric/controller';
-import {readFileSync, writeFileSync, mkdirSync, openSync, closeSync, fsyncSync, renameSync,
+import {readFileSync, readSync, constants, writeFileSync, mkdirSync, openSync, closeSync, fsyncSync, renameSync,
   unlinkSync, existsSync, lstatSync, fstatSync, realpathSync} from 'node:fs';
 import {resolve, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -13,6 +13,10 @@ const fail = code => { throw new Error(code); };
 // Final quote validation treats these characters as quotation delimiters.
 // Encode presentation only; original labels/unit/path remain unchanged in evidence.
 const display = value => String(value).replace(/["`“”「」『』\x00-\x1f\x7f]/g,c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0'));
+// Human fields cannot issue terminal controls or create additional diagnostic lines.
+// Only the recipe answer's deliberate LF separators are retained; JSON stays original.
+const terminalText = (value,answer=false) => String(value).replace(/[\x00-\x1f\x7f-\x9f\u2028\u2029]/g,c=>
+  answer&&c==='\n'?'\n':'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0'));
 const TIMEOUT_MS = 180000;
 const MAX_BYTES = 32768;
 const BUDGET = Object.freeze({max_operations:8,max_decisions:0,max_plan_versions:3,max_parallel:1,timeout_ms:TIMEOUT_MS});
@@ -73,7 +77,34 @@ function openStore(directory) {
     path:name=>join(root,name),loadMeta(){return unseal(read(join(root,'admission.json')),'saved_admission_corrupt');},
     loadSnapshot(){const s=read(join(root,'snapshot.json'));if(!validSnapshot(s))fail('saved_snapshot_corrupt');return s;}};
 }
-function rawSource(meta){const raw=readFileSync(meta.file);if(raw.length>MAX_BYTES)fail('csv_file_too_large');if(sha(raw)!==meta.source_sha256)fail('source_changed_original_run_preserved');return raw;}
+function readCsvBytes(file){
+  // POSIX FIFO open must not wait for a producer. Windows CreateFile does not
+  // wait for an absent/busy pipe; libuv fstat marks pipe handles nonregular.
+  // Only win32 uses its native read-only open, never an unknown-platform fallback.
+  let flags=constants.O_RDONLY;
+  if(process.platform!=='win32'){
+    if(!(constants.O_NONBLOCK>0))fail('csv_nonblocking_open_unsupported');
+    flags|=constants.O_NONBLOCK;
+  }
+  const fd=openSync(file,flags);
+  try{
+    const before=fstatSync(fd,{bigint:true});
+    if(!before.isFile())fail('csv_file_not_regular');
+    if(before.size>BigInt(MAX_BYTES))fail('csv_file_too_large');
+    // A size hint is not an allocation budget: the same FD may grow after fstat.
+    const buffer=Buffer.alloc(MAX_BYTES+1);let length=0;
+    while(length<buffer.length){
+      const count=readSync(fd,buffer,length,buffer.length-length,length);
+      if(count===0)break;length+=count;
+    }
+    if(length>MAX_BYTES)fail('csv_file_too_large');
+    const after=fstatSync(fd,{bigint:true});
+    if(!after.isFile()||before.size!==after.size||after.size!==BigInt(length)||
+      before.mtimeNs!==after.mtimeNs||before.ctimeNs!==after.ctimeNs)fail('csv_source_changed_during_read');
+    return buffer.subarray(0,length);
+  }finally{closeSync(fd);}
+}
+function rawSource(meta){const raw=readCsvBytes(meta.file);if(sha(raw)!==meta.source_sha256)fail('source_changed_original_run_preserved');return raw;}
 function assertBindings(store,meta,snapshot){
   if(!store.owns()||!validSnapshot(snapshot)||digest(store.loadMeta())!==digest(meta)||
     digest(snapshot.admission)!==digest(meta.admission)||snapshot.checkpoint.state.request.run_id!==meta.run_id||
@@ -198,7 +229,7 @@ export async function runConsumer(options){
       const file=realpathSync(resolve(options.file)),column=options.column??'amount',unit=options.unit??'units';
       if(!/^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(column)||column==='item'||typeof unit!=='string'||!unit.trim()||unit.length>40||/[\r\n\x00-\x1f]/.test(unit))fail('column_or_unit_invalid');
       if(existsSync(store.path('admission.json'))){const meta=store.loadMeta();if(meta.request!==options.request||meta.file!==file||meta.column!==column||meta.unit!==unit)fail('existing_state_request_conflict');return savedDelivery(loadRecord(store,meta).record,meta);}
-      const raw=readFileSync(file);if(raw.length>MAX_BYTES)fail('csv_file_too_large');const text=decode(raw);
+      const raw=readCsvBytes(file),text=decode(raw);
       const run_id='csv-'+randomUUID(),now=Date.now(),admission={run_id,profile_id:'local-scripted-csv',timeout_ms:TIMEOUT_MS,admitted_at_ms:now,deadline_ms:now+TIMEOUT_MS};
       const meta={run_id,file,request:options.request,column,unit,source_sha256:sha(raw),revision:'csv-r1',admission,pause_after_read:options.pauseAfterRead===true};
       atomic(store.path('admission.json'),sealed(meta));
@@ -217,10 +248,10 @@ export async function runConsumer(options){
   }finally{store.close();}
 }
 export function formatHuman(record){
-  return [`State: ${record.current_state??record.state}; original saved state: ${record.state}; run: ${record.run_id}`,`Delivery: ${record.delivery}`,record.result.answer??'No completed answer.',
-    `Source SHA256: ${record.source.sha256}`,`Original deadline: ${new Date(record.deadline_ms).toISOString()}`,
-    `Parent operations: ${record.usage.parent_operations_started}/${record.budget.max_operations}; Jev/native calls: 0; token/cost: unknown`,
-    `Next: ${record.next_operation}`].join('\n');
+  return [`State: ${terminalText(record.current_state??record.state)}; original saved state: ${terminalText(record.state)}; run: ${terminalText(record.run_id)}`,`Delivery: ${terminalText(record.delivery)}`,terminalText(record.result.answer??'No completed answer.',true),
+    `Source SHA256: ${terminalText(record.source.sha256)}`,`Original deadline: ${new Date(record.deadline_ms).toISOString()}`,
+    `Parent operations: ${terminalText(record.usage.parent_operations_started)}/${terminalText(record.budget.max_operations)}; Jev/native calls: 0; token/cost: unknown`,
+    `Next: ${terminalText(record.next_operation)}`].join('\n');
 }
 function args(argv){
   const options={};let json=false;
@@ -234,5 +265,5 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
     if(record.state==='STOPPED'||record.state==='NEEDS_RECONCILIATION')process.exitCode=2;
   }catch(error){const record={schema:'csv-consumer-error-v1',state:'OPERATION_REFUSED',error:error.message,
     next_operation:'Inspect the original state/input and this error. No automatic retry, new admission, or lock break occurred.',qualification:QUALIFICATION};
-    process.stderr.write('Operation refused: '+record.error+'\n'+record.next_operation+'\n');process.stdout.write(JSON.stringify(record,null,2)+'\n');process.exitCode=1;}
+    process.stderr.write('Operation refused: '+terminalText(record.error)+'\n'+terminalText(record.next_operation)+'\n');process.stdout.write(JSON.stringify(record,null,2)+'\n');process.exitCode=1;}
 }

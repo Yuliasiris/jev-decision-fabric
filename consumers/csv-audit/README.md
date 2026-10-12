@@ -16,7 +16,7 @@ Copy `consumers/csv-audit` into your own work directory, then install that local
 
 ```sh
 cd csv-audit
-npm install --ignore-scripts /absolute/path/jev-decision-fabric-0.4.0-preview.5.tgz
+npm install --ignore-scripts /absolute/path/jev-decision-fabric-0.4.0-preview.6.tgz
 node index.mjs --request "Audit this CSV and total the amount column" \
   --file /absolute/path/my-ledger.csv --column amount --unit USD \
   --state /absolute/path/private-audit-state --pause-after-read
@@ -37,7 +37,11 @@ node index.mjs --operation status --state /absolute/path/private-audit-state \
 
 The format is deliberately explicit: UTF-8, header `item,amount` (or `item,<your --column>`), then one nonempty item and one signed decimal per line. CRLF or LF is accepted. No quoted cells, embedded commas/newlines, extra columns, whitespace around cells, exponent notation or currency symbols. Maximum 32 KiB, 1,000 data rows, 18 integer digits and six fractional digits. Duplicate item labels are reported; they remain separate rows in the sum. `--unit` labels the values and does not convert currencies or validate accounting rules. The prose request must mention audit, total, sum, 合計 or 監査; this selects only this recipe and never executes other requested actions.
 
+The caller CSV is read through one opened file descriptor. Only regular files are accepted. An oversized size is rejected before reading; a fixed 32 KiB + 1-byte buffer also detects growth beyond the limit. Size and modification/change timestamps are compared around that read, and the descriptor always closes. An ordinary symlink to a regular file remains usable. These checks apply to initial admission, worker reads, freshness checks and resume. A detected change refuses that operation; it does not create a new source revision or deadline. POSIX uses nonblocking open to avoid waiting for a FIFO producer. Windows uses its native read-only open and the same descriptor checks, since Node does not provide that POSIX flag there. Other platforms without the flag refuse before opening. The current native execution proof is on Linux; the Windows branch has a focused substitute check, not a native Windows execution receipt. This is not a guarantee that an unresponsive filesystem call can be interrupted.
+
 Quotation delimiters in a label, unit or file path are displayed as `\uXXXX` in the answer so they cannot be mistaken for evidence quotations. The structured result and original observation retain the exact input values.
+
+Human stderr escapes C0/C1 terminal controls and Unicode line/paragraph separators U+2028/U+2029, including controls in filesystem errors and saved answers. The recipe answer's deliberate LF line breaks remain readable. Machine JSON, original observations, error text and source bytes are not rewritten by this display policy.
 
 Failures preserve evidence. Invalid CSV produces a stopped/failed result, an archived invalid observation and no partial total or final answer. Correct the file and explicitly choose a **new** state directory for a new audit. If a paused run's source changed, resume is refused before SDK restoration: restore the exact original file bytes to continue the original run before its deadline, or choose a new state for new input. A corrupt saved state requires an intact private backup of the original archive; the consumer does not rebuild a snapshot from result text. No automatic retry, admission refresh, uncertain-effect clearing or stale-lock deletion is provided. A writer lock after an ungraceful process exit requires owner investigation and original-effect reconciliation; do not delete it to force a resume. Status keeps the original saved state and labels an expired unfinished run `EXPIRED_UNFINISHED`, with `resumable:false`.
 

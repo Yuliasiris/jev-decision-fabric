@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0-preview.6
+
+- Bound every CSV source read before whole-file allocation, using the opened regular-file descriptor and a 32 KiB plus one-byte limit. Refuse nonregular inputs and files that change during a read; preserve original bytes and same-run restoration.
+- Omit executable recovery examples when any command argument contains display controls, while showing an escaped original locator. Ordinary POSIX quoting and the JSON/receipt contracts remain available.
+- Escape control characters in CSV human errors and saved/current output while retaining exact machine records and normal multiline answers.
+
+
 ## 0.4.0-preview.5
 
 - Show fresh answers, cached results, uncertain operations, saved run identity and safe next commands in optional ordinary-parent text output. Add saved receipt inspection without reconnecting and persist an omitted request ID before effects.
