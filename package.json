@@ -1,6 +1,6 @@
 {
   "name": "jev-decision-fabric",
-  "version": "0.4.0-preview.4",
+  "version": "0.4.0-preview.5",
   "private": true,
   "type": "module",
   "engines": {
@@ -74,6 +74,7 @@
     "netlify/",
     "public/",
     "examples/",
+    "consumers/",
     "skills/",
     ".env.example",
     "mcp.json.example",

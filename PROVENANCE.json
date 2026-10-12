@@ -297,5 +297,15 @@
     "qualification": "Test-only scripted planner and host exercise the actual SDK; no native/Jev/model/second-host evidence is created",
     "primary_contract": "https://modelcontextprotocol.io/specification/2025-11-25/schema#toolannotations",
     "distribution": "MIT project source; private:true package, no registry or production publication"
+  },
+  "client_consumer_use_release": {
+    "version": "0.4.0-preview.5",
+    "public_base_commit": "361eaf1ae5fc38a5db029c36786b22a93e4d0d7d",
+    "ordinary_parent": "Optional text rendering, no-connection saved inspection and omitted request ID persisted under the existing journal lock; default JSON contract retained",
+    "csv_consumer": "Only public package exports and Node builtins; real CSV I/O and separate-process pause/resume reuse the existing WorkRun/Controller snapshot and original admission",
+    "qualification": "Local scripted planner/final with actual owned-file I/O. No live Jev/native model, authenticated second host, new allocation or paid call",
+    "recovery_scope": "Graceful saved pause and read-only receipt inspection; actual host SIGKILL/power-loss recovery remains unqualified. No stale-lock removal or unknown-effect replay",
+    "rights": "MIT project-authored source/documents; dependencies, service and models remain separately governed",
+    "distribution": "private:true source/tarball; no registry publication or production deployment"
   }
 }

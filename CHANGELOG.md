@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0-preview.5
+
+- Show fresh answers, cached results, uncertain operations, saved run identity and safe next commands in optional ordinary-parent text output. Add saved receipt inspection without reconnecting and persist an omitted request ID before effects.
+- Add a public-SDK CSV consumer for an ordinary request and an owned CSV: audit, pause/save, separate-process same-run resume, exact decimal answer and source/observation provenance.
+- Retain default parent JSON, the existing Controller and host authorization, original deadlines/budgets and unknown-effect guards. Local scripted I/O does not qualify live Jev, native models or an authenticated second host.
+
+
 ## 0.4.0-preview.4
 
 - Correct the work continuation MCP annotation: repeated explicit calls can advance planning under the original run budget, so idempotentHint is false.

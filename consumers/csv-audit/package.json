@@ -1,0 +1,11 @@
+{
+  "name": "jev-csv-audit-consumer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Local numeric CSV audit using the public Jev SDK and a scripted recipe",
+  "scripts": {"audit": "node index.mjs"},
+  "engines": {"node": ">=22.13.0"},
+  "peerDependencies": {"jev-decision-fabric": ">=0.4.0-preview.4"}
+}
