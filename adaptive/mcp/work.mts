@@ -42,7 +42,7 @@ export function workToolDefinitions(service?: HostWorkService) {
       inputSchema: schema({request: {type: 'string', minLength: 1, maxLength: 16000}, request_id: idSchema}, ['request', 'request_id']),
       annotations: {...common, readOnlyHint: false}},
     {name: 'work_continue_v1', description: 'Continue the same saved run under its original deadline, budget and host authority. Unknown effects need reconciliation and are not automatically resent.',
-      inputSchema: schema({run_id: idSchema}, ['run_id']), annotations: {...common, readOnlyHint: false}},
+      inputSchema: schema({run_id: idSchema}, ['run_id']), annotations: {...common, readOnlyHint: false, idempotentHint: false}},
     {name: 'work_status_v1', description: 'Read the authorized current result and unresolved work of the same run. This does not start, refresh or retry work.',
       inputSchema: schema({run_id: idSchema}, ['run_id']), annotations: {...common, readOnlyHint: true}},
     {name: 'work_cancel_v1', description: 'Request cancellation of this host\'s existing run. Saved evidence and uncertain effects remain available for reconciliation.',

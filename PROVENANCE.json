@@ -289,5 +289,13 @@
     "dependency_records_unchanged": 498,
     "registry_publication": false,
     "production_deployment": false
+  },
+  "mcp_continuation_annotation_release": {
+    "version": "0.4.0-preview.4",
+    "change": "work_continue_v1 advertises idempotentHint false; explicit same-run continuation can reserve additional planning or work",
+    "behavior": "Metadata correction only; SDK/controller, host authorization, original deadline/budget and unknown-effect replay guards are preserved",
+    "qualification": "Test-only scripted planner and host exercise the actual SDK; no native/Jev/model/second-host evidence is created",
+    "primary_contract": "https://modelcontextprotocol.io/specification/2025-11-25/schema#toolannotations",
+    "distribution": "MIT project source; private:true package, no registry or production publication"
   }
 }

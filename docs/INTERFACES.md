@@ -45,6 +45,13 @@ exact request. An identical repeated request reads the original run; a
 conflicting request does not start another run. Unknown effects are not
 resent.
 
+`work_continue_v1` advertises `idempotentHint: false`. An explicit continuation
+can clear a pause and invoke the planner again, so another call with the same
+`run_id` may perform additional work under the original budget and deadline.
+The start `request_id` binding does not deduplicate continuation calls. A lost
+mutating response requires original host readback/reconciliation; this hint
+does not authorize automatic retry, a new admission or additional allocation.
+
 HostWorkService implements authorize/start/continue/status/cancel. The
 transport supplies `{principal, signal}` outside tool args. The adapter
 validates argument shape, checks authorization before and after service work,
