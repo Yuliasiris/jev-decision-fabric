@@ -44,7 +44,10 @@ try {
     'dist/adaptive/providers/index.mjs', 'dist/examples/work-sdk.mjs',
     'dist/examples/work-stdio.mjs', 'dist/examples/work-host.mjs',
     'dist/examples/work-comparison.mjs', 'dist/examples/work-parent.mjs',
-    'docs/MCP_PARENT.md', 'adaptive/sdk/READY_INPUTS.md',
+    'docs/MCP_PARENT.md', 'dist/examples/work-parent-view.mjs',
+    'consumers/csv-audit/index.mjs', 'consumers/csv-audit/package.json',
+    'consumers/csv-audit/README.md', 'consumers/csv-audit/sample.csv',
+    'docs/CSV_CONSUMER.md', 'adaptive/sdk/READY_INPUTS.md',
     'dist/examples/work-data/numbers.json', 'dist/examples/work-data/policy-a.txt',
     'dist/examples/work-data/policy-b.txt'];
   for (const path of required) if (!files.includes(path)) throw Error('SDK_PACKAGE_FILE_MISSING: ' + path);

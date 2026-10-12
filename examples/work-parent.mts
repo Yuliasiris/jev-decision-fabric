@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {CONTRACT_VERSION} from '../adaptive/contract/c0.mts';
 import type {Result} from '../adaptive/contract/c0.mts';
 import {canonical,digest} from '../adaptive/src/controller.mts';
+import {renderParentText,renderParentHelp,renderParentError} from './work-parent-view.mts';
 
 type RPC = Readonly<{jsonrpc:'2.0';id?:number;method:string;params?:unknown}>;
 /** Trusted caller code binds a transport. Tool arguments never configure authentication. */
@@ -82,7 +83,8 @@ function uncertain(journal:ParentJournal){
 function project(journal:ParentJournal,fromClientReceipt=false):ParentMessage {
   const result=journal.last_result,unknown=uncertain(journal),last=journal.history.at(-1),failed=!!last&&(last.error!==null||last.transport_closed===false);
   const status=unknown?'response_unknown':failed&&result?'readback_unconfirmed':result?.status??'not_started';
-  const next=unknown||failed||!result?'host_readback_or_reconciliation':result.status==='needs_host'?'continue':'none';
+  const unconfirmedClose=journal.history.some(e=>e.transport_closed!==true&&e.disposition!=='prepared');
+  const next=unknown||failed||unconfirmedClose||!result?'host_readback_or_reconciliation':result.status==='needs_host'?'continue':'none';
   const text=unknown?'The original operation has no verified response. Preserve its request_id and run_id; the host must read or reconcile the original effect. Do not resend it.':
     failed&&result?`The current ${last!.operation} operation or host close is unconfirmed. The previous result remains saved evidence; inspect actual host readback or reconciliation before another effect.`:
     result?.answer??(result?.status==='needs_host'?'The host returned saved unfinished work. An explicit continuation may be requested under the original limits.':
@@ -93,6 +95,13 @@ function project(journal:ParentJournal,fromClientReceipt=false):ParentMessage {
     delivery:fromClientReceipt?'saved_client_receipt':'transport_operation',
     current_operation:!fromClientReceipt&&last?{operation:last.operation,disposition:last.disposition,error:last.error,transport_closed:last.transport_closed}:null,
     qualification:'client projection only; actual host origins and effects require their own evidence'};
+}
+/** Read only the existing verified client record; never connect, save, lock, or append history. */
+export function inspectParentReceipt(receiptPath:string):Readonly<{message:ParentMessage;journal:ParentJournal}> {
+  const path=resolve(receiptPath);
+  if(!existsSync(path))throw new ParentClientError('PARENT_RECEIPT_NOT_FOUND');
+  try{const journal=immutable(readJournal(path));return immutable({message:project(journal,true),journal});}
+  catch(error){if(error instanceof ParentClientError)throw error;throw new ParentClientError('PARENT_JOURNAL_INVALID');}
 }
 function validateResult(value:unknown,expectedRun:string|null):asserts value is Result {
   const count=(n:unknown)=>typeof n==='number'&&Number.isSafeInteger(n)&&n>=0;
@@ -138,15 +147,18 @@ export async function runParentOperation(options:Readonly<{
   try{
     if(existsSync(receiptPath))journal=readJournal(receiptPath);
     if(operation==='start'){
-      if(typeof request!=='string'||!request.trim()||request.length>16000||typeof requestId!=='string'||!ID.test(requestId)||!stateDirectory)
+      const originalState=stateDirectory??journal?.state_directory;
+      if(typeof request!=='string'||!request.trim()||request.length>16000||!originalState||
+        requestId!==undefined&&(typeof requestId!=='string'||!ID.test(requestId)))
         throw new ParentClientError('PARENT_ARGUMENTS_INVALID');
+      const originalId=requestId??journal?.request_id??'parent-'+randomUUID();
       if(journal){
-        if(journal.request!==request||journal.request_id!==requestId||journal.state_directory!==stateDirectory)
+        if(journal.request!==request||journal.request_id!==originalId||journal.state_directory!==originalState)
           throw new ParentClientError('PARENT_REQUEST_CONFLICT');
         // An identical start is a local receipt read. It never calls start again.
         return project(journal,true);
       }
-      journal={schema:'jev.reference-parent-journal.v1',request,request_id:requestId,state_directory:stateDirectory,
+      journal={schema:'jev.reference-parent-journal.v1',request,request_id:originalId,state_directory:originalState,
         run_id:null,last_result:null,history:[],digest:''};saveJournal(receiptPath,journal);
     }else{
       if(!journal||!journal.run_id)throw new ParentClientError('PARENT_ORIGINAL_RUN_UNAVAILABLE');
@@ -239,13 +251,38 @@ export function openReferenceParentTransport(stateDirectory:string,options:Reado
 }
 
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
-  const arg=(name:string)=>{const i=process.argv.indexOf(name);return i<0?undefined:process.argv[i+1];};
-  const receipt=arg('--receipt'),operation=arg('--operation')??'start',state=arg('--state');
-  if(!receipt||!['start','continue','status'].includes(operation))throw new ParentClientError('Use --receipt FILE --operation start|continue|status');
-  const saved=existsSync(receipt)?readJournal(receipt):undefined;
-  const directory=state??saved?.state_directory;
-  if(!directory)throw new ParentClientError('Use --state PRIVATE_DIRECTORY for the first start');
-  const message=await runParentOperation({receiptPath:receipt,operation:operation as ParentOperation,stateDirectory:state,
-    request:arg('--request'),requestId:arg('--request-id'),connect:async()=>openReferenceParentTransport(directory,{pauseAfterRead:process.argv.includes('--pause-after-read')})});
-  process.stdout.write(JSON.stringify(message)+'\n');
+  const extension=import.meta.url.endsWith('.mts')?['--experimental-strip-types']:[];
+  const command=['node',...extension,fileURLToPath(import.meta.url)];
+  let receipt:string|undefined;
+  try{
+    const values=new Map<string,string>(),flags=new Set<string>();
+    const valued=['--receipt','--operation','--state','--request','--request-id','--format'];
+    for(let i=2;i<process.argv.length;i++){
+      const key=process.argv[i];if(values.has(key)||flags.has(key))throw new ParentClientError('PARENT_ARGUMENTS_INVALID');
+      if(['--help','--pause-after-read'].includes(key)){flags.add(key);continue;}
+      if(!valued.includes(key)||process.argv[i+1]===undefined||process.argv[i+1].startsWith('--'))throw new ParentClientError('PARENT_ARGUMENTS_INVALID');
+      values.set(key,process.argv[++i]);
+    }
+    const format=values.get('--format')??'json';if(!['json','text'].includes(format))throw new ParentClientError('PARENT_FORMAT_INVALID');
+    if(flags.has('--help'))process.stdout.write(renderParentHelp({command}));
+    else{
+      receipt=values.get('--receipt');const operation=values.get('--operation')??'start',state=values.get('--state');
+      if(!receipt||!['start','continue','status','inspect'].includes(operation))throw new ParentClientError('PARENT_ARGUMENTS_INVALID');
+      const saved=existsSync(receipt)?inspectParentReceipt(receipt):undefined;
+      let message:ParentMessage;
+      if(operation==='inspect'){
+        if(state!==undefined||values.has('--request')||values.has('--request-id')||flags.has('--pause-after-read'))throw new ParentClientError('PARENT_ARGUMENTS_INVALID');
+        message=(saved??inspectParentReceipt(receipt)).message;
+      }else{
+        const directory=state??saved?.journal.state_directory;if(!directory)throw new ParentClientError('PARENT_ARGUMENTS_INVALID');
+        message=await runParentOperation({receiptPath:receipt,operation:operation as ParentOperation,stateDirectory:state,
+          request:values.get('--request'),requestId:values.get('--request-id'),connect:async()=>openReferenceParentTransport(directory,{pauseAfterRead:flags.has('--pause-after-read')})});
+      }
+      if(format==='json')process.stdout.write(JSON.stringify(message)+'\n');
+      else{
+        const inspection=inspectParentReceipt(receipt);
+        process.stdout.write(renderParentText(message,{receiptPath:resolve(receipt),command,journal:inspection.journal}));
+      }
+    }
+  }catch(error){process.stderr.write(renderParentError(error,{receiptPath:receipt===undefined?undefined:resolve(receipt),command}));process.exitCode=1;}
 }

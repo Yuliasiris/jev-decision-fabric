@@ -26,7 +26,7 @@ npm run verify:sdk-package
 ~~~sh
 npm pack --ignore-scripts
 # 作成されたtarballを、利用側のprojectから指定する
-npm install /path/to/jev-decision-fabric-0.4.0-preview.4.tgz --ignore-scripts
+npm install /path/to/jev-decision-fabric-0.4.0-preview.5.tgz --ignore-scripts
 ~~~
 
 registry上の同名packageの公開を前提にしません。導入・ports・保存と再開は[SDK guide](docs/SDK.md)、権限と接続は[host connections](docs/HOST_CONNECTIONS.md)を参照してください。
@@ -36,6 +36,12 @@ import {createWork, restoreWork, WorkRun} from 'jev-decision-fabric';
 import {Controller} from 'jev-decision-fabric/controller';
 import {runPairedComparison} from 'jev-decision-fabric/evaluation';
 ~~~
+
+## 自分のCSVを保存して続行する
+
+候補JSONを手入力せず、普通の依頼とCSVから件数・合計・重複ラベルを確認する利用例は [CSV consumer](docs/CSV_CONSUMER.md) にあります。公開packageのexportsとNode標準APIを使い、開始後に保存して、別processから元のrun・期限・予算で続行できます。結果は入力SHAと観測を含みます。plannerとfinalはローカルのscripted recipeです。
+
+普通のstdio parentは [MCP parent guide](docs/MCP_PARENT.md) の `--format text` で回答・現在の確認状態・安全な次操作を表示できます。`--operation inspect` は保存済みclient記録を接続なしで読みます。request IDを省略すると開始前に保存し、同じ依頼の再入場で再利用します。JSON出力も利用できます。
 
 ## Interfaceの選び方
 
