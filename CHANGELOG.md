@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0-preview.4
+
+- Correct the work continuation MCP annotation: repeated explicit calls can advance planning under the original run budget, so idempotentHint is false.
+- Cover discovery and two explicit continuations with the existing SDK and test-only scripted bindings. Execution, authorization, deadlines and unknown-effect retry rules are unchanged.
+
+
 ## 0.4.0-preview.3
 
 - Allow fresh read-only status of a known saved run after an earlier transport

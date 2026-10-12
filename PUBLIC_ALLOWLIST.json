@@ -14,8 +14,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 3178,
-      "sha256": "eeac917ff96912841a514c3122eee1e1e49af2a0f8c93e982a5befc3c4bd07b6"
+      "bytes": 3538,
+      "sha256": "f62751d2cfa36a2053595c2a823963005db1de348fe1c252cf8b3ac3bac38c76"
     },
     {
       "path": "FABRIC.md",
@@ -34,13 +34,13 @@
     },
     {
       "path": "PROVENANCE.json",
-      "bytes": 16343,
-      "sha256": "9934eee626c17158a7ebb6fe1f11912b743dc54b26ecc0e5e196745a19ab3c9e"
+      "bytes": 17062,
+      "sha256": "0f445fa7ff065588ccffa40f5b03635a5f64ff65bc4e78d9a721b10c99b1ee21"
     },
     {
       "path": "README.md",
       "bytes": 8059,
-      "sha256": "8d8964382539da43840b73885bbe41deedbd440436fc9f8ef0c61dc10c9e8b6d"
+      "sha256": "f41aad68aab7abbd343af9c5b35218f6cdfb17af410eca3be76d146ec2042c9a"
     },
     {
       "path": "SECURITY.md",
@@ -50,7 +50,7 @@
     {
       "path": "THIRD_PARTY_DEPENDENCIES.json",
       "bytes": 162176,
-      "sha256": "6cbdd0b8dec97ffebb45231eb1eab02800e06c80d90784623d483331c5c4c94d"
+      "sha256": "855f46d81d95e37068642a4e8195c43b1ff50057b51ca0e7a325ddc5b0b516fc"
     },
     {
       "path": "adaptive/contract/c0.mts",
@@ -89,8 +89,8 @@
     },
     {
       "path": "adaptive/mcp/work.mts",
-      "bytes": 8621,
-      "sha256": "6639e4609da346770926f1bf064941d04450c8e611ad495c26c5f7a1e90d2b37"
+      "bytes": 8644,
+      "sha256": "f520849f369a72531e6aae592c6a20dcfdb20318970fc04a4166eb13ff7b8bce"
     },
     {
       "path": "adaptive/providers/index.mts",
@@ -164,8 +164,8 @@
     },
     {
       "path": "adaptive/test/mcp-work.test.mts",
-      "bytes": 7733,
-      "sha256": "33369a028f656b17be76b90f313ff1a1e16940fb3caecf5300b9aa5856711d92"
+      "bytes": 16094,
+      "sha256": "c55dfa727770c301950f71762aec1fe3acec9e412d6fa461555c7a510fb4f7ae"
     },
     {
       "path": "adaptive/test/reference-host.test.mts",
@@ -199,8 +199,8 @@
     },
     {
       "path": "docs/INTERFACES.md",
-      "bytes": 3945,
-      "sha256": "6f264e1182ca53243292a3702b2703de50532ac937fd05f2cc2c4889906eac03"
+      "bytes": 4414,
+      "sha256": "adfbdbaede238d9ae6b43ce37d1b97339bea29e54d318e04f50beafeec8066b1"
     },
     {
       "path": "docs/MCP_PARENT.md",
@@ -360,12 +360,12 @@
     {
       "path": "package-lock.json",
       "bytes": 241697,
-      "sha256": "1ff6761c5e7c6e9348e39785eac7753d34f33dea2f81f854a8b938a9086d2b68"
+      "sha256": "7e48d7418088007e531a9a4da2e3e6d96eea8773b1da367d92b98c087c251956"
     },
     {
       "path": "package.json",
       "bytes": 2566,
-      "sha256": "d0017c90cea6cf07e466666cb1c8974ea4b41674fc8affdddad5f85becdced23"
+      "sha256": "828facbb5c0a1ce03b14742f8688576ceee74c2769ffe139d0a3fdb9ad316169"
     },
     {
       "path": "public/index.html",
