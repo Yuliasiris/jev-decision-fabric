@@ -1,5 +1,5 @@
 {
-  "lock_sha256": "51b1447a8ba8b5706bef3a8cf569947e74e1e2ed0ea23dec69848dfaea565382",
+  "lock_sha256": "fbda11141ef54c7242889f633bb65fc45905847971bf584b3e9050e2c22bc013",
   "dependencies": [
     {
       "path": "node_modules/@babel/code-frame",

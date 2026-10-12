@@ -262,5 +262,18 @@
     "provider_reuse": "Existing project-authored finite serializer, one-call transport and decision adapter; only relative imports relocated for the public package. Exact source correspondence is retained by the release writer.",
     "new_source": "Project-authored host SDK/work MCP/comparison and bounded reference adapters; work ports reuse the one canonical Controller.",
     "qualification": "Source license, build, public-install and local examples have their own observations; no same-run live J1, new native/model allocation, authenticated second host or actual held-out gain follows from this distribution."
+  },
+  "goal_reentry_release": {
+    "base_commit": "b0fa3cf8c19bbd8f01095db41e6bd4c5dd9959b0",
+    "version": "0.4.0-preview.2",
+    "state": "REVIEWED_SOURCE_LIVE_QUALIFICATION_OPEN",
+    "changes": [
+      "verified held-out cohort before method recommendation",
+      "ordinary parent stdio client using existing reference host",
+      "portable observation/request archive keys with read-only legacy saved-record reuse"
+    ],
+    "qualification": "Source and bounded local transport verification; live J1, native model comparison and separate authenticated hosts remain unqualified",
+    "canonical_kernel_and_existing_plugin": "Preserve existing source bytes; no alternate controller, grants, registry or remote service",
+    "dependency_records_unchanged": 498
   }
 }

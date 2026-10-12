@@ -19,6 +19,18 @@ const catalog:Registration[]=[
 ];
 function atomic(path:string,value:unknown){const tmp=path+'.'+process.pid+'.tmp';writeFileSync(tmp,JSON.stringify(value,null,2)+'\n',{mode:0o600});renameSync(tmp,path);}
 function read(path:string){return JSON.parse(readFileSync(path,'utf8'));}
+const observationPath=(directory:string,observationId:string)=>join(directory,'observation-'+hash(observationId)+'.json');
+/** Mechanical archive matching only; caller, current writer, admission and frame authority remain host checks. */
+export function referenceObservationArchiveMatches(directory:string,observation:Observation,frame:TaskRequest){
+  try{
+    if(!id(observation.id))return false;
+    const paths=[observationPath(directory,observation.id),join(directory,'observation-'+observation.id+'.json')];
+    const records=paths.filter(existsSync).map(read),expected=digest(observation);
+    return records.length>0&&records.every(record=>record.observation.id===observation.id&&
+      record.observation_sha256===expected&&digest(record.observation)===expected&&digest(record.frame)===digest(frame)&&
+      digest(record)===digest(records[0]));
+  }catch{return false;}
+}
 export function openReferenceHost(directory:string,options:{pauseAfterRead?:boolean}={}){
   const directoryPath=resolve(directory);mkdirSync(directoryPath,{recursive:true,mode:0o700});
   const lock=join(directoryPath,'writer.lock'),fd=openSync(lock,'wx',0o600),lockToken=randomUUID();writeFileSync(fd,lockToken);
@@ -30,9 +42,17 @@ export function openReferenceHost(directory:string,options:{pauseAfterRead?:bool
   const assetNames={numbers:'numbers.json',a:'policy-a.txt',b:'policy-b.txt'};
   const sourceFiles=Object.fromEntries(Object.entries(assetNames).map(([k,v])=>[k,join(assets,v)]));
   const dir=(runId:string)=>{if(!id(runId))throw Error('invalid_run_id');return join(directoryPath,runId);};
-  const claimPath=(requestId:string)=>{if(!id(requestId))throw Error('invalid_request_id');return join(directoryPath,'request-'+requestId+'.json');};
-  function loadMeta(runId:string){const meta=read(join(dir(runId),'admission.json')),claim=read(claimPath(meta.request_id));
-    if(meta.run_id!==runId||claim.run_id!==runId||claim.principal!==meta.principal||claim.request_digest!==meta.request_digest||claim.meta_digest!==digest(meta))throw Error('saved_admission_unconfirmed');return meta;}
+  const claimPath=(requestId:string)=>{if(!id(requestId))throw Error('invalid_request_id');return join(directoryPath,'request-'+hash(requestId)+'.json');};
+  function existingClaim(requestId:string){
+    const paths=[claimPath(requestId),join(directoryPath,'request-'+requestId+'.json')],claims=paths.filter(existsSync).map(read);
+    if(claims.some(claim=>!claim||typeof claim!=='object'||Array.isArray(claim)||
+      !['run_id','principal','request_digest','meta_digest'].every(field=>typeof claim[field]==='string')||
+      !id(claim.run_id)||!claim.principal||!['request_digest','meta_digest'].every(field=>/^[0-9a-f]{64}$/.test(claim[field]))))throw Error('saved_request_claim_unconfirmed');
+    if(claims.some(claim=>digest(claim)!==digest(claims[0])))throw Error('saved_request_claim_conflict');
+    return claims[0];
+  }
+  function loadMeta(runId:string){const meta=read(join(dir(runId),'admission.json')),claim=existingClaim(meta.request_id);
+    if(!claim||meta.run_id!==runId||claim.run_id!==runId||claim.principal!==meta.principal||claim.request_digest!==meta.request_digest||claim.meta_digest!==digest(meta))throw Error('saved_admission_unconfirmed');return meta;}
   function validSnapshot(s:WorkSnapshot){try{const {digest:sha,...body}=s,{digest:cpSha,...cpBody}=s.checkpoint;
     return sha===digest(body)&&cpSha===digest(cpBody)&&s.checkpoint.state.request.run_id===s.admission.run_id;}catch{return false;}}
   function loadSnapshot(runId:string):WorkSnapshot{const s=read(join(dir(runId),'snapshot.json'));
@@ -50,7 +70,6 @@ export function openReferenceHost(directory:string,options:{pauseAfterRead?:bool
     const current=()=>{try{return ownsLock()&&meta.principal==='local-reference-owner'&&digest(loadMeta(meta.run_id))===digest(meta)&&
       Object.entries(meta.source_hashes).every(([key,value])=>hash(readFileSync(sourceFiles[key]))===value);}catch{return false;}};
     const frameCurrent=(frame:TaskRequest)=>current()&&frame.run_id===meta.run_id&&frame.input_revision==='reference-r1';
-    const observationPath=(o:Observation)=>join(d,'observation-'+o.id+'.json');
     const host:WorkHost={
       signal:abort.signal,
       finalCapability:'report',
@@ -85,11 +104,15 @@ export function openReferenceHost(directory:string,options:{pauseAfterRead?:bool
         return {contract_version:CONTRACT_VERSION,id:'observation:'+frame.task_id,run_id:frame.run_id,task_id:frame.task_id,attempt_id:frame.attempt_id,
           input_revision:frame.input_revision,input_digest:frame.input_digest,status:'completed',value,evidence,mode:'scripted',usage:{tokens:null,cost:null}};
       },
-      archiveObservation:async record=>atomic(observationPath(record.observation),record),
-      verifyObservationOrigin:async(observation,frame)=>{
-        const path=observationPath(observation);if(!existsSync(path))return false;const record=read(path);
-        return record.observation_sha256===digest(observation)&&digest(record.frame)===digest(frame);
+      archiveObservation:async record=>{
+        const path=observationPath(d,record.observation.id),legacy=join(d,'observation-'+record.observation.id+'.json');
+        if(existsSync(path)||id(record.observation.id)&&existsSync(legacy)){
+          if(!referenceObservationArchiveMatches(d,record.observation,record.frame))throw Error('saved_observation_archive_conflict');
+          return; // Reconciliation reads the original archive without rewriting or migrating its receipt.
+        }
+        atomic(path,record);
       },
+      verifyObservationOrigin:async(observation,frame)=>referenceObservationArchiveMatches(d,observation,frame),
       authorizeReconcile:async()=>current(),
       decision:async()=>{throw Error('reference_host_has_no_Jev_allocation_or_decision_connection');},
       final:async frame=>{
@@ -137,8 +160,10 @@ export function openReferenceHost(directory:string,options:{pauseAfterRead?:bool
   const service:HostWorkService={
     authorize:async(action,args,caller)=>{try{assertCaller(action,args,caller);return true;}catch{return false;}},
     start:(args,caller)=>exclusive('start',args,caller,async()=>{
-      const claim=claimPath(args.request_id),requestDigest=hash(args.request);
-      if(existsSync(claim)){const old=read(claim);if(old.principal!==caller.principal||old.request_digest!==requestDigest)throw Error('request_conflict');return status(old.run_id);}
+      const claim=claimPath(args.request_id),requestDigest=hash(args.request),old=existingClaim(args.request_id);
+      if(old){const original=loadMeta(old.run_id);
+        if(original.request_id!==args.request_id||old.principal!==caller.principal||old.request_digest!==requestDigest)throw Error('request_conflict');
+        return status(old.run_id);}
       const kind=/total|mean|average|calculate|合計|平均|計算/i.test(args.request)?'statistics':/compare|比較/i.test(args.request)?'comparison':null;
       if(!kind)throw Error('reference_request_unsupported');
       const run_id='reference-'+randomUUID(),d=dir(run_id);mkdirSync(d,{mode:0o700});

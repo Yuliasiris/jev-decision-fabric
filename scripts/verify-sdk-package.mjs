@@ -39,10 +39,12 @@ try {
     'dist/adaptive/sdk/index.mjs', 'dist/adaptive/sdk/index.d.mts',
     'dist/adaptive/src/controller.mjs',
     'dist/adaptive/contract/c0.mjs', 'dist/adaptive/contract/checkpoint-v1.mjs',
-    'dist/adaptive/evaluation/index.mjs', 'dist/adaptive/mcp/work.mjs',
+    'dist/adaptive/evaluation/index.mjs', 'dist/adaptive/evaluation/cohort.mjs',
+    'dist/adaptive/evaluation/cohort.d.mts', 'dist/adaptive/mcp/work.mjs',
     'dist/adaptive/providers/index.mjs', 'dist/examples/work-sdk.mjs',
     'dist/examples/work-stdio.mjs', 'dist/examples/work-host.mjs',
-    'dist/examples/work-comparison.mjs', 'adaptive/sdk/READY_INPUTS.md',
+    'dist/examples/work-comparison.mjs', 'dist/examples/work-parent.mjs',
+    'docs/MCP_PARENT.md', 'adaptive/sdk/READY_INPUTS.md',
     'dist/examples/work-data/numbers.json', 'dist/examples/work-data/policy-a.txt',
     'dist/examples/work-data/policy-b.txt'];
   for (const path of required) if (!files.includes(path)) throw Error('SDK_PACKAGE_FILE_MISSING: ' + path);
@@ -70,6 +72,8 @@ import * as typesafe from 'jev-decision-fabric/typesafe';
 if (typeof sdk.createWork !== 'function' || typeof sdk.restoreWork !== 'function' ||
   typeof sdk.WorkRun !== 'function' || typeof controller.Controller !== 'function' ||
   typeof evaluation.runPairedComparison !== 'function' ||
+  typeof evaluation.sealEvaluationCohort !== 'function' ||
+  typeof evaluation.verifyEvaluationCohort !== 'function' ||
   typeof typesafe.createTypeSafeDecision !== 'function')
   throw Error('SDK_PACKAGE_EXPORT_MISSING');
 console.log(JSON.stringify({sdk: Object.keys(sdk), controller: Object.keys(controller),
@@ -79,9 +83,9 @@ console.log(JSON.stringify({sdk: Object.keys(sdk), controller: Object.keys(contr
   await writeFile(join(consumer, 'app.mts'), `import {createWork, type WorkHost} from 'jev-decision-fabric';
 import {Controller} from 'jev-decision-fabric/controller';
 import {createTypeSafeDecision, type HostOptions} from 'jev-decision-fabric/typesafe';
-import {runPairedComparison, type ConditionManifest} from 'jev-decision-fabric/evaluation';
+import {runPairedComparison, sealEvaluationCohort, verifyEvaluationCohort, type ConditionManifest} from 'jev-decision-fabric/evaluation';
 import {createWorkMcpHandler, type HostWorkService} from 'jev-decision-fabric/mcp';
-export const factories = {createWork,Controller,createTypeSafeDecision,runPairedComparison,createWorkMcpHandler};
+export const factories = {createWork,Controller,createTypeSafeDecision,runPairedComparison,sealEvaluationCohort,verifyEvaluationCohort,createWorkMcpHandler};
 export type PublicTypes = {host: WorkHost; options: HostOptions; manifest: ConditionManifest; service: HostWorkService};
 `);
   run(process.execPath, [require.resolve('typescript/lib/tsc.js'), '--module', 'nodenext',

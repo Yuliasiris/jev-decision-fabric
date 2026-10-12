@@ -3,6 +3,8 @@ import {EVALUATION_VERSION, STRATEGIES, demand, digest, exact, profileScope, sam
 import {active, bounded, validateAttestation} from './comparison.mts';
 import type {ArmEvaluation, ArmReceipt, ConditionManifest, JSONValue, PairedComparison,
   ReceiptAttestation, Strategy, StrategyRunners} from './contract.mts';
+import {verifiedCohortIdentity} from './cohort.mts';
+import type {CohortIdentity, VerifiedCohort} from './cohort.mts';
 
 export type PolicyProfile = Readonly<{version: typeof EVALUATION_VERSION;
   selection: Strategy; reason: string; scope: ReturnType<typeof profileScope>;
@@ -10,13 +12,17 @@ export type PolicyProfile = Readonly<{version: typeof EVALUATION_VERSION;
   evidence: readonly Readonly<{case_id: string; split: 'design' | 'held-out'; manifest_sha256: string;
     runs: readonly Readonly<{strategy: Strategy; run_id: string; receipt_sha256: string;
       attestation_sha256: string | null; grade_sha256: string | null}>[]}>[];
-  provider_selection_required: boolean; authority: 'advisory_only'; automatic_apply: false; digest: string}>;
+  provider_selection_required: boolean; authority: 'advisory_only'; automatic_apply: false; digest: string;
+  cohort?: CohortIdentity}>;
+const qualifiedProfiles = new WeakMap<VerifiedCohort, Set<string>>();
 export type FreshPolicyAdmission = Readonly<{run_id: string; manifest: ConditionManifest}>;
 export type CurrentUseReadback = Readonly<{status: 'verified' | 'unavailable' | 'denied';
   profile_digest: string; run_id: string; manifest_sha256: string; deadline_ms: number;
   current_fence: JSONValue; original: JSONValue}>;
 export type PolicyAuthority = Readonly<{
-  /** Resolve the saved profile's actual comparison records. A self-hash is not authentication. */
+  /** Resolve saved profile/comparison AND cohort preregistration/use-history originals.
+   * A self-hash or old comparisons-only lookup is not that authentication.
+   */
   verifyProfile: (profile: PolicyProfile) => Promise<boolean>;
   /** Current real admission/read permissions/budget/absolute D; never a JSON-issued grant. */
   authorizeAdmission: (admission: FreshPolicyAdmission) => Promise<boolean>;
@@ -73,9 +79,10 @@ function dominates(a: ArmEvaluation, b: ArmEvaluation): boolean {
 }
 
 /** Produce an advisory candidate profile. The existing consumer must authenticate/adopt it separately. */
-export function createPolicyProfile(comparisons: readonly PairedComparison[]): PolicyProfile {
+export function createPolicyProfile(comparisons: readonly PairedComparison[], cohort?: VerifiedCohort): PolicyProfile {
   demand(Array.isArray(comparisons) && comparisons.length > 0 && comparisons.length <= 96, 'COMPARISONS_REQUIRED');
   const cs = comparisons.map(c => {validateComparison(c); return snapshot(c);});
+  const cohortIdentity = cohort ? verifiedCohortIdentity(cohort, cs) : undefined;
   const scope = snapshot(profileScope(cs[0].manifest));
   demand(cs.every(c => same(profileScope(c.manifest), scope)), 'POLICY_SCOPE_MISMATCH');
   demand(new Set(cs.map(c => c.manifest.case_id)).size === cs.length, 'CASE_REUSED');
@@ -91,6 +98,8 @@ export function createPolicyProfile(comparisons: readonly PairedComparison[]): P
   else if (held.some(c => c.status !== 'measured')) {
     reason = 'NONLIVE_OR_UNVERIFIED_HELD_OUT';
     evidence_quality = held.every(c => c.status === 'diagnostic_only') ? 'diagnostic_only' : 'insufficient';
+  } else if (!cohortIdentity) {
+    reason = 'COHORT_ORIGIN_UNCONFIRMED';
   } else {
     evidence_quality = 'held_out_live';
     if (held.every(c => dominates(c.arms.single, c.arms.fixed) && dominates(c.arms.single, c.arms.adaptive))) {
@@ -105,18 +114,29 @@ export function createPolicyProfile(comparisons: readonly PairedComparison[]): P
         const a = c.arms[strategy]; return a.receipt ? [{strategy, run_id: a.receipt.run_id,
           receipt_sha256: a.receipt_sha256!, attestation_sha256: a.attestation ? digest(a.attestation) : null,
           grade_sha256: a.grade ? digest(a.grade) : null}] : [];
-      })})), provider_selection_required: selection === 'adaptive', authority: 'advisory_only' as const, automatic_apply: false as const};
-  return snapshot({...body, digest: digest(body)});
+      })})), provider_selection_required: selection === 'adaptive', authority: 'advisory_only' as const, automatic_apply: false as const,
+    ...(cohortIdentity ? {cohort: cohortIdentity} : {})};
+  const profile = snapshot({...body, digest: digest(body)});
+  if (cohort) {
+    const profiles = qualifiedProfiles.get(cohort) ?? new Set<string>();
+    profiles.add(profile.digest); qualifiedProfiles.set(cohort, profiles);
+  }
+  return profile;
 }
 
 function validateProfile(profile: PolicyProfile) {
-  exact(profile, ['version','selection','reason','scope','evidence_quality','evidence','provider_selection_required','authority','automatic_apply','digest'], 'PROFILE');
+  exact(profile, ['version','selection','reason','scope','evidence_quality','evidence','provider_selection_required','authority','automatic_apply','digest',
+    ...(Object.hasOwn(profile, 'cohort') ? ['cohort'] : [])], 'PROFILE');
   const {digest: sha, ...body} = profile;
   demand(sha === digest(body) && profile.version === EVALUATION_VERSION && STRATEGIES.includes(profile.selection) &&
     profile.authority === 'advisory_only' && profile.automatic_apply === false &&
     profile.provider_selection_required === (profile.selection === 'adaptive') &&
     (profile.selection === 'fixed' || profile.evidence_quality === 'held_out_live'), 'PROFILE');
   demand(Array.isArray(profile.evidence), 'PROFILE_EVIDENCE');
+  if (profile.cohort) {
+    exact(profile.cohort, ['seal_digest','comparison_digest','origin_sha256'], 'PROFILE_COHORT');
+    demand(Object.values(profile.cohort).every(v => typeof v === 'string' && /^[a-f0-9]{64}$/.test(v)), 'PROFILE_COHORT');
+  }
 }
 
 function validateCurrentUse(w: unknown, p: PolicyProfile, a: FreshPolicyAdmission): asserts w is CurrentUseReadback {
@@ -131,8 +151,13 @@ function validateCurrentUse(w: unknown, p: PolicyProfile, a: FreshPolicyAdmissio
  * No Controller construction, financial allocation, parent budget/D reset, new key or automatic Apply.
  */
 export async function consumePolicyProfile(profile: PolicyProfile, admission: FreshPolicyAdmission,
-  runners: StrategyRunners, authority: PolicyAuthority, context: {signal: AbortSignal; now?: () => number}) {
+  runners: StrategyRunners, authority: PolicyAuthority, context: {signal: AbortSignal; now?: () => number; cohort?: VerifiedCohort}) {
   validateProfile(profile); validateManifest(admission.manifest);
+  // Legacy fixed/no-selector remains usable. Legacy improved JSON must not bypass cohort qualification.
+  demand(profile.selection === 'fixed' || profile.cohort, 'PROFILE_COHORT_REQUIRED');
+  if (profile.cohort) demand(context.cohort && qualifiedProfiles.get(context.cohort)?.has(profile.digest) &&
+    same(profile.cohort, context.cohort && {seal_digest: context.cohort.seal_digest,
+      comparison_digest: context.cohort.comparison_digest, origin_sha256: context.cohort.origin_sha256}), 'PROFILE_COHORT_REQUIRED_OR_BINDING');
   const p = snapshot(profile), a = snapshot(admission), m = a.manifest;
   const parentSignal = context.signal, clock = context.now ?? Date.now, now = clock.bind(context);
   demand(typeof a.run_id === 'string' && a.run_id.length > 0 && a.run_id.length <= 512 &&
@@ -187,6 +212,8 @@ export async function consumePolicyProfile(profile: PolicyProfile, admission: Fr
       run_id: a.run_id, receipt, receipt_sha256: digest(receipt), attestation, current_use: currentUse,
       qualification: receipt.mode !== 'live' ? 'diagnostic_only' :
         attestation?.status === 'verified' && currentUse?.status === 'verified' ? 'measured_use' : 'unconfirmed_use',
+      policy_evaluation_qualification: p.cohort ? p.evidence_quality :
+        p.evidence_quality === 'held_out_live' ? 'legacy_fixed_unsealed' : p.evidence_quality,
       reservation: 'RETAINED_NO_RETRY', authority: 'advisory_only', automatic_apply: false});
   } finally {clearTimeout(timer);}
 }

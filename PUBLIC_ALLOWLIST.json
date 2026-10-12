@@ -14,8 +14,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 1915,
-      "sha256": "a449c53e9e6bcb757bfa162ee7587661a8e77b047a5de124d1b7d0bba1d51805"
+      "bytes": 2697,
+      "sha256": "c5e809bf5551f41516803cac72b76f38351e64d9d9d5e8b2d0320f22faf2b723"
     },
     {
       "path": "FABRIC.md",
@@ -34,13 +34,13 @@
     },
     {
       "path": "PROVENANCE.json",
-      "bytes": 14441,
-      "sha256": "a23393b6c3cedbeac02bbf969e33f3f1caca3ce89f0b8f7b73fa6bdd6e60f1c4"
+      "bytes": 15210,
+      "sha256": "74115b5ea60fb02813c090fec7ecefddb4f923fbc9154194b2e4dac9a691da2e"
     },
     {
       "path": "README.md",
-      "bytes": 7743,
-      "sha256": "03bd34e42605d89d51dd9e61359cdcf90f0b0d058f361a37ae67e08a8ff0cdd5"
+      "bytes": 8059,
+      "sha256": "06d8dd2eaf8be91ad534bfae7ae6003e1b4caeaa537594414c7551eb2de19a33"
     },
     {
       "path": "SECURITY.md",
@@ -50,7 +50,7 @@
     {
       "path": "THIRD_PARTY_DEPENDENCIES.json",
       "bytes": 162176,
-      "sha256": "812e05e7adbb7c6b3ace0a4723cb713f91bfbf22442b6d6048a9fe225f155038"
+      "sha256": "c107c6e51ea26eb4b29b39bfbbf460ecdf01ffef8a4bc7e30e1547c744977e92"
     },
     {
       "path": "adaptive/contract/c0.mts",
@@ -61,6 +61,11 @@
       "path": "adaptive/contract/checkpoint-v1.mts",
       "bytes": 3232,
       "sha256": "972864fcd4c4b04d531ed94bab5eb9996b839f8128fe8cbabbfa6dcef6ec8177"
+    },
+    {
+      "path": "adaptive/evaluation/cohort.mts",
+      "bytes": 9626,
+      "sha256": "0596e1972c0cc0fcd66f52570f67f43bce0de38ff90bd5881b9c356b7a686dd6"
     },
     {
       "path": "adaptive/evaluation/comparison.mts",
@@ -74,13 +79,13 @@
     },
     {
       "path": "adaptive/evaluation/index.mts",
-      "bytes": 266,
-      "sha256": "1576a3187730f8be4837fe0e97da0d99079f012d24977402e16627e62d72998d"
+      "bytes": 520,
+      "sha256": "c1034d849fe7f1ede4be9c11f06e828677b39648c41938b8450b303ff9d59234"
     },
     {
       "path": "adaptive/evaluation/policy.mts",
-      "bytes": 14053,
-      "sha256": "5de0149fec2295909865ab91dd7771ed6abc25a6a5010d4a05c02d54c3089571"
+      "bytes": 15805,
+      "sha256": "02f8b5ab97f533716d8864e1da6cacdbd248b5d88a75c4627b835c85c0858f25"
     },
     {
       "path": "adaptive/mcp/work.mts",
@@ -133,9 +138,29 @@
       "sha256": "62da3dba0cdc2fea280b88d44accd485cc404d1b9507ede25b45e9031dc12493"
     },
     {
+      "path": "adaptive/test/evaluation-cohort-fixtures.mts",
+      "bytes": 4359,
+      "sha256": "a995a79b85bbac06f7f5cbabcb5457280dd54ad1fadc56f33da20abe60a7699a"
+    },
+    {
+      "path": "adaptive/test/evaluation-cohort-origin.test.mts",
+      "bytes": 4444,
+      "sha256": "1ae0dca1c35fbc3f929acace9c20b36bfd66e6ba6f4bfb5512479d9f53f2bdfe"
+    },
+    {
+      "path": "adaptive/test/evaluation-cohort.test.mts",
+      "bytes": 11767,
+      "sha256": "a4b7d77b2c9a9c410b56680433bffe3ea7e7d4b647bcfd0a5f5c2be051bfb3f2"
+    },
+    {
       "path": "adaptive/test/evaluation-comparison.test.mts",
-      "bytes": 24668,
-      "sha256": "f8921fce0739ff8a0f567d88b18452efed74d01bca7471ff9cd30fc9681262f8"
+      "bytes": 24994,
+      "sha256": "ddcfc40cfb34567fa6ef3cfea6e4b584f48d8f2bc2ee3c777212117774cf94eb"
+    },
+    {
+      "path": "adaptive/test/mcp-parent.test.mts",
+      "bytes": 20482,
+      "sha256": "2e299843576ed20196cf4475504db87da8ac45906a5ef07ce97bf6c56e0c2393"
     },
     {
       "path": "adaptive/test/mcp-work.test.mts",
@@ -144,8 +169,8 @@
     },
     {
       "path": "adaptive/test/reference-host.test.mts",
-      "bytes": 8403,
-      "sha256": "d109d5fae8f7aaa8a521896d2e541b70332d86ebeca13a422a4ce2b495daf49c"
+      "bytes": 22149,
+      "sha256": "fdfcd278020e91879445c8d2b020f06da7ed337dd57e151d684cd0fdfdbc5cc0"
     },
     {
       "path": "adaptive/test/sdk-missing-input.test.mts",
@@ -164,8 +189,8 @@
     },
     {
       "path": "docs/COMPARISON.md",
-      "bytes": 5594,
-      "sha256": "1155a3f2435596cecf16de1b74c8a9ec81df1fb4726c5ece1c1bcfb176f87980"
+      "bytes": 9149,
+      "sha256": "d2c5520c463ad7bd056abc6877fed369ae5aae4a1d5854c65d6b98b1dee6b78e"
     },
     {
       "path": "docs/HOST_CONNECTIONS.md",
@@ -178,14 +203,19 @@
       "sha256": "6f264e1182ca53243292a3702b2703de50532ac937fd05f2cc2c4889906eac03"
     },
     {
+      "path": "docs/MCP_PARENT.md",
+      "bytes": 6374,
+      "sha256": "35a483db751b98efb9c0f32ad9da6f64ceb403add8f2e5742b1035cd49cf5580"
+    },
+    {
       "path": "docs/RELEASE_SCOPE.md",
       "bytes": 2530,
       "sha256": "60ecfdc9d114c129ed0d80907c8d7004a9e3abce0f3d44a5f5dd42ee263f0f19"
     },
     {
       "path": "docs/SDK.md",
-      "bytes": 11977,
-      "sha256": "8d99e21679c5ff3a36fcfbf5fd93846fdc262bd0c1fb63ef77d7c42bdd3c8cfa"
+      "bytes": 13254,
+      "sha256": "4078442b408806a336ee28e7290ffc8035b3cdfa2cb41370bcf787a6230e67f0"
     },
     {
       "path": "docs/TYPESAFE.md",
@@ -239,8 +269,13 @@
     },
     {
       "path": "examples/work-host.mts",
-      "bytes": 18160,
-      "sha256": "7cf106b0f71419382e13cfe07d2a4e4dfb72a66f93528a6031b5beba9d64fec2"
+      "bytes": 20012,
+      "sha256": "e6f25d1a7d85efd4dfa3e322f13384a9cb24a11ec9f2b8a471201b5ca1666a31"
+    },
+    {
+      "path": "examples/work-parent.mts",
+      "bytes": 18351,
+      "sha256": "ede9c30a4e8a9921873698c190eb568220c998e29838fd1cd8895e354a2e6133"
     },
     {
       "path": "examples/work-sdk.mts",
@@ -325,12 +360,12 @@
     {
       "path": "package-lock.json",
       "bytes": 241697,
-      "sha256": "51b1447a8ba8b5706bef3a8cf569947e74e1e2ed0ea23dec69848dfaea565382"
+      "sha256": "fbda11141ef54c7242889f633bb65fc45905847971bf584b3e9050e2c22bc013"
     },
     {
       "path": "package.json",
       "bytes": 2566,
-      "sha256": "a5dfcffcfb7b1f69c47237df170f8ceee1c04ffe8b136f248d70e0125a47b40b"
+      "sha256": "d4215bf2e0c7e9297745c212077cb9d180fe6715dc63370f7d269a27b0699434"
     },
     {
       "path": "public/index.html",
@@ -364,8 +399,8 @@
     },
     {
       "path": "scripts/verify-sdk-package.mjs",
-      "bytes": 5970,
-      "sha256": "3c9cecc784006cf5bf97f1076a14dd96c3e8365f6a85f8b0b06e46f84aa2b34d"
+      "bytes": 6323,
+      "sha256": "39d2bf3a6163edd9926ae14a22389530e4404496b5df9b02edf3f349bd9f0269"
     },
     {
       "path": "skills/decision-fabric/SKILL.md",

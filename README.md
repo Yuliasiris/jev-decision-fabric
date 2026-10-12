@@ -26,7 +26,7 @@ npm run verify:sdk-package
 ~~~sh
 npm pack --ignore-scripts
 # 作成されたtarballを、利用側のprojectから指定する
-npm install /path/to/jev-decision-fabric-0.4.0-preview.1.tgz --ignore-scripts
+npm install /path/to/jev-decision-fabric-0.4.0-preview.2.tgz --ignore-scripts
 ~~~
 
 registry上の同名packageの公開を前提にしません。導入・ports・保存と再開は[SDK guide](docs/SDK.md)、権限と接続は[host connections](docs/HOST_CONNECTIONS.md)を参照してください。
@@ -91,3 +91,5 @@ node scripts/configure-origin.mjs https://your-service.example
 [PROVENANCE.json](PROVENANCE.json)、[public allowlist](PUBLIC_ALLOWLIST.json)、[source manifest](SOURCE_MANIFEST.sha256)が配布sourceを記録します。Oct9の43-file公開は閲覧sourceのhistorical releaseです。今回追加したSDK、比較、MCP adapterとMIT grantは同じ履歴に独立したscopeとして記録します。元の本番function/lockとのbyte一致やruntimeの導入は、それぞれの実観測が必要です。
 
 [CHANGELOG.md](CHANGELOG.md)、[release scope](docs/RELEASE_SCOPE.md)、[SECURITY.md](SECURITY.md)を確認できます。私的会話、原資料、character sources、運用credential、model weights、training dataを含めません。
+
+普通のparentからstdio hostへ依頼し、保存・再入場・状態読戻しを行う公開client例は [MCP parent guide](docs/MCP_PARENT.md) にあります。これは既bounded local reference hostを使い、実LLM／Jevや別の認証済hostのqualificationを追加するものではありません。

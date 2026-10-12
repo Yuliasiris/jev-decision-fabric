@@ -210,6 +210,18 @@ actual host fencing/reconciliation; do not blindly remove a lock or resend an
 uncertain request. Restoration retains the original three-minute deadline.
 This graceful pause/restart recipe is not crash/power-loss qualification.
 
+New reference observation archives and request claims use SHA-256 of the
+original UTF-8 ID as their filename key, so an allowed `:` in an ID does not
+become a filesystem name. The original IDs, frames, admission, budget and
+digests remain unchanged. Existing legacy archives and claims are read without
+renaming or rewriting them; a legacy claim must bind the exact original
+request ID through its saved admission metadata. Observation readback checks
+the original ID, body digest, recorded digest and frame. If both filenames
+exist, their records must agree or readback fails closed. This mechanical
+matching adds no caller, writer or origin authority. Linux saved-layout and
+SDK reconciliation fixtures are qualified; an actual Windows host has not
+been tested.
+
 The stdio sample uses the same bounded reference service:
 
 ~~~sh
@@ -248,3 +260,13 @@ measured/null usage. A generic adapter interface is not that live evidence.
 The host planner can admit independently ready work while explicitly pausing a dependent missing input. Read the bounded [ready-input pattern](../adaptive/sdk/READY_INPUTS.md) and its actual local I/O regression. The kernel still holds if the caller registers an unauthorized task first; this pattern does not silently skip failed or unknown effects.
 
 The reference host checks its process writer lease, exact saved wrapper/result and original admission. Concurrent mutations are rejected; terminal/expired continuation reads the original qualified result without admitting more effects. Its status projects deadline exhaustion for unfinished work without rewriting the archived evidence. Graceful pause/restart is qualified by its own receipt; forced termination, coherent storage rollback and remote unknown-effect recovery require the actual host's evidence.
+
+## Ordinary parent client
+
+See [MCP_PARENT.md](MCP_PARENT.md) for a packaged client that submits an ordinary
+request, saves the original operation identity, and reads or explicitly resumes
+the same reference host run through real stdio messages. The client record is
+a receipt aid; the host retains its original SDK state, writer and deadline.
+An uncertain mutating response remains unresolved and is not automatically
+resent. This local example retains the reference host scripted planner/final
+qualification.
