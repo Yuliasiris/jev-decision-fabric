@@ -275,5 +275,19 @@
     "qualification": "Source and bounded local transport verification; live J1, native model comparison and separate authenticated hosts remain unqualified",
     "canonical_kernel_and_existing_plugin": "Preserve existing source bytes; no alternate controller, grants, registry or remote service",
     "dependency_records_unchanged": 498
+  },
+  "readonly_status_recovery_release": {
+    "base_commit": "ba854be8f884d9c3a92920b8e40afcb7b90b4646",
+    "version": "0.4.0-preview.3",
+    "state": "REVIEWED_SOURCE_LIVE_QUALIFICATION_OPEN",
+    "finding": "FT-STATUS-01",
+    "change": "Restrict historical unconfirmed-close gate to mutating continue; fresh known-run status can read under existing host authority",
+    "preserved": "Historical unknown and closure evidence, no-resend guard, failed-current-readback cache markers, canonical kernel/SDK/MCP/server/auth source bytes",
+    "validation": "12 affected parent checks, strict types, compiled same-original-run readonly recovery after real response proxy termination; detailed receipts retained privately",
+    "qualification": "Bounded local scripted reference host and real local I/O/transport termination; live J1, actual host crash, separate authenticated hosts and real LLM comparison remain unqualified",
+    "package_lock_sha256": "1ff6761c5e7c6e9348e39785eac7753d34f33dea2f81f854a8b938a9086d2b68",
+    "dependency_records_unchanged": 498,
+    "registry_publication": false,
+    "production_deployment": false
   }
 }

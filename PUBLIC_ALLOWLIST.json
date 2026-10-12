@@ -14,8 +14,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 2697,
-      "sha256": "c5e809bf5551f41516803cac72b76f38351e64d9d9d5e8b2d0320f22faf2b723"
+      "bytes": 3178,
+      "sha256": "eeac917ff96912841a514c3122eee1e1e49af2a0f8c93e982a5befc3c4bd07b6"
     },
     {
       "path": "FABRIC.md",
@@ -34,13 +34,13 @@
     },
     {
       "path": "PROVENANCE.json",
-      "bytes": 15210,
-      "sha256": "74115b5ea60fb02813c090fec7ecefddb4f923fbc9154194b2e4dac9a691da2e"
+      "bytes": 16343,
+      "sha256": "9934eee626c17158a7ebb6fe1f11912b743dc54b26ecc0e5e196745a19ab3c9e"
     },
     {
       "path": "README.md",
       "bytes": 8059,
-      "sha256": "06d8dd2eaf8be91ad534bfae7ae6003e1b4caeaa537594414c7551eb2de19a33"
+      "sha256": "8d8964382539da43840b73885bbe41deedbd440436fc9f8ef0c61dc10c9e8b6d"
     },
     {
       "path": "SECURITY.md",
@@ -50,7 +50,7 @@
     {
       "path": "THIRD_PARTY_DEPENDENCIES.json",
       "bytes": 162176,
-      "sha256": "c107c6e51ea26eb4b29b39bfbbf460ecdf01ffef8a4bc7e30e1547c744977e92"
+      "sha256": "6cbdd0b8dec97ffebb45231eb1eab02800e06c80d90784623d483331c5c4c94d"
     },
     {
       "path": "adaptive/contract/c0.mts",
@@ -159,8 +159,8 @@
     },
     {
       "path": "adaptive/test/mcp-parent.test.mts",
-      "bytes": 20482,
-      "sha256": "2e299843576ed20196cf4475504db87da8ac45906a5ef07ce97bf6c56e0c2393"
+      "bytes": 25332,
+      "sha256": "e9748da8714b4e2b5e404d6742b668e1523df4334a45aea91092859d8a5fd417"
     },
     {
       "path": "adaptive/test/mcp-work.test.mts",
@@ -204,8 +204,8 @@
     },
     {
       "path": "docs/MCP_PARENT.md",
-      "bytes": 6374,
-      "sha256": "35a483db751b98efb9c0f32ad9da6f64ceb403add8f2e5742b1035cd49cf5580"
+      "bytes": 6807,
+      "sha256": "17a829c8f664b0ec7a50651bc4eae1cb40f1f076ed213772181eb908082063da"
     },
     {
       "path": "docs/RELEASE_SCOPE.md",
@@ -274,8 +274,8 @@
     },
     {
       "path": "examples/work-parent.mts",
-      "bytes": 18351,
-      "sha256": "ede9c30a4e8a9921873698c190eb568220c998e29838fd1cd8895e354a2e6133"
+      "bytes": 18375,
+      "sha256": "198b9f1b2a8da9d302cd2aa5b136a51519dee3eef63978cd1615efb63d3430a0"
     },
     {
       "path": "examples/work-sdk.mts",
@@ -360,12 +360,12 @@
     {
       "path": "package-lock.json",
       "bytes": 241697,
-      "sha256": "fbda11141ef54c7242889f633bb65fc45905847971bf584b3e9050e2c22bc013"
+      "sha256": "1ff6761c5e7c6e9348e39785eac7753d34f33dea2f81f854a8b938a9086d2b68"
     },
     {
       "path": "package.json",
       "bytes": 2566,
-      "sha256": "d4215bf2e0c7e9297745c212077cb9d180fe6715dc63370f7d269a27b0699434"
+      "sha256": "d0017c90cea6cf07e466666cb1c8974ea4b41674fc8affdddad5f85becdced23"
     },
     {
       "path": "public/index.html",
