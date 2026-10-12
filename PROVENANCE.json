@@ -1,6 +1,6 @@
 {
   "schema": "jev.source-distribution-candidate.v1",
-  "state": "PUBLISHED_SOURCE_ONLY_LICENSE_PENDING",
+  "state": "REUSABLE_SOURCE_RUNTIME_QUALIFICATION_OPEN",
   "maintainer": "Yuliasiris",
   "source_inputs": {
     "fabric_source": "d82b00cb25adce09cd012630b53fd55e1d75c2c1",
@@ -25,24 +25,41 @@
     "examples": "synthetic review candidates; no real provider replies",
     "lock": "newly generated; deployed-lock bytes unavailable; byte equivalence NOT_ESTABLISHED",
     "runtime_used_for_release_checks": "Node v22.23.3 and v24.19.0; 3 focused checks passed on each",
-    "package_lock_sha256": "4752c304fdf7c5932780f7a8ec614dbec96fcf75b4426d4ad2d163c6961e35bf",
+    "package_lock_sha256": "51b1447a8ba8b5706bef3a8cf569947e74e1e2ed0ea23dec69848dfaea565382",
     "package_lock_v3": true,
-    "tool_metadata": "Export the existing runtime tools function for the offline distribution generator; preserve the original assembled app hash; prepared release app differs by export keyword only."
+    "tool_metadata": "Export the existing runtime tools function for the offline distribution generator; preserve the original assembled app hash; prepared release app differs by export keyword only.",
+    "historical_package_lock_sha256": "4752c304fdf7c5932780f7a8ec614dbec96fcf75b4426d4ad2d163c6961e35bf",
+    "package_metadata": "0.4.0-preview.1, MIT, Node >=22.13, JavaScript runtime SDK exports; all dependency package records unchanged",
+    "generic_source": "One canonical project-authored C0/checkpoint/Controller copied into adaptive/contract and adaptive/src; SDK/work adapters use this controller",
+    "provider_source": "Reuse existing serializer/finite runner/one-call TypeSafe adapter with public relative import relocation only; current host grants and private journal/TraceStore supplied by caller",
+    "new_modules": [
+      "adaptive/sdk",
+      "adaptive/mcp",
+      "adaptive/evaluation",
+      "adaptive/providers",
+      "SDK build/package check scripts",
+      "public host/install/interface/comparison/license docs"
+    ],
+    "new_qualification": "See release writer records for exact scoped checks; source and scripts do not assert actual live Jev/native/host/adoption/comparison completion"
   },
-  "license_status": "project-authored grant unresolved; R4 MIT not inherited",
+  "license_status": "MIT for distributed project-authored source and documentation; third-party/service/model rights remain separate",
   "distribution": {
     "public_repository": "https://github.com/Yuliasiris/jev-decision-fabric",
     "ref": "refs/heads/main",
     "release": null,
-    "repository_content_status": "43-file source published for inspection; project-authored reuse license unresolved",
+    "repository_content_status": "Reusable project-authored source with SDK, host-bound work interfaces and comparison ports; live runtime and third-party qualification remain separate",
     "publication_performed": true,
-    "scope": "41 allowlisted payloads plus two generated identity files; no adaptive source, private artifact, live settings or credentials",
+    "scope": "Project-authored finite server and public-safe generic contracts/controller/SDK/providers/MCP/comparison/docs; no private source documents, runtime handoffs, credentials or model assets",
     "not_claimed": [
-      "MIT grant",
       "Directory listing",
       "production redeploy",
       "adaptive production completion",
-      "new provider or spending authorization"
+      "new provider or spending authorization",
+      "registry package publication",
+      "live generic SDK or same-run J1 completion",
+      "native final producer qualification",
+      "third-party install/completion/resume",
+      "held-out live method gains"
     ]
   },
   "files": [
@@ -196,5 +213,54 @@
       "release_sha256": "a8d5959cc7a8bb26d4046f6f850fd09167340aa1199bcbd37888dd5315d217e2",
       "relationship": "byte_equal_to_assembled_source"
     }
-  ]
+  ],
+  "historical_source_only_publication": {
+    "public_commit": "cc7b049599ea88f9f7b698462282a58262e726a7",
+    "distributed_files": 43,
+    "license_status": "project-authored grant unresolved; R4 MIT not inherited",
+    "distribution": {
+      "public_repository": "https://github.com/Yuliasiris/jev-decision-fabric",
+      "ref": "refs/heads/main",
+      "release": null,
+      "repository_content_status": "43-file source published for inspection; project-authored reuse license unresolved",
+      "publication_performed": true,
+      "scope": "41 allowlisted payloads plus two generated identity files; no adaptive source, private artifact, live settings or credentials",
+      "not_claimed": [
+        "MIT grant",
+        "Directory listing",
+        "production redeploy",
+        "adaptive production completion",
+        "new provider or spending authorization"
+      ]
+    }
+  },
+  "file_correspondence_scope": "Existing files table preserves historical N02 assembled-origin correspondence; SOURCE_MANIFEST.sha256 identifies current distributed files including new modules",
+  "portable_sdk_release": {
+    "version": "0.4.0-preview.1",
+    "public_base_commit": "cc7b049599ea88f9f7b698462282a58262e726a7",
+    "project_authored_grant": "MIT granted for selected distributed project source/documentation under the maintainer delegated release scope; no service/model/private or third-party grant",
+    "canonical_kernel": [
+      {
+        "path": "adaptive/contract/c0.mts",
+        "bytes": 4476,
+        "sha256": "cf268718ca92dd0911389cb564f8fd47ecd8fcaefabdb1fba940b790fb96e77b",
+        "relationship": "byte-exact reuse of existing project canonical implementation, not a regenerated commit/history"
+      },
+      {
+        "path": "adaptive/contract/checkpoint-v1.mts",
+        "bytes": 3232,
+        "sha256": "972864fcd4c4b04d531ed94bab5eb9996b839f8128fe8cbabbfa6dcef6ec8177",
+        "relationship": "byte-exact reuse of existing project canonical implementation, not a regenerated commit/history"
+      },
+      {
+        "path": "adaptive/src/controller.mts",
+        "bytes": 41155,
+        "sha256": "4f3db95c2208c5eac51777a7b83c984ec10111d995704e548eba53d8268c1caa",
+        "relationship": "byte-exact reuse of existing project canonical implementation, not a regenerated commit/history"
+      }
+    ],
+    "provider_reuse": "Existing project-authored finite serializer, one-call transport and decision adapter; only relative imports relocated for the public package. Exact source correspondence is retained by the release writer.",
+    "new_source": "Project-authored host SDK/work MCP/comparison and bounded reference adapters; work ports reuse the one canonical Controller.",
+    "qualification": "Source license, build, public-install and local examples have their own observations; no same-run live J1, new native/model allocation, authenticated second host or actual held-out gain follows from this distribution."
+  }
 }

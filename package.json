@@ -1,18 +1,92 @@
 {
   "name": "jev-decision-fabric",
-  "version": "0.3.0",
+  "version": "0.4.0-preview.1",
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13.0"
   },
   "scripts": {
-    "test": "node --experimental-strip-types --test test/*.mts"
+    "test": "node --experimental-strip-types --test test/*.mts",
+    "build:sdk": "node scripts/build-sdk.mjs",
+    "verify:sdk-package": "node scripts/verify-sdk-package.mjs",
+    "prepare": "node scripts/build-sdk.mjs",
+    "prepack": "node scripts/build-sdk.mjs",
+    "test:sdk": "node --experimental-strip-types --test adaptive/test/*.test.mts"
   },
   "dependencies": {
     "@netlify/blobs": "11.1.0"
   },
   "devDependencies": {
     "@netlify/functions": "4.2.5"
-  }
+  },
+  "license": "MIT",
+  "description": "Host-owned resumable work and bounded decisions with interchangeable worker, tool and decision ports",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Yuliasiris/jev-decision-fabric.git"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/adaptive/sdk/index.d.mts",
+      "default": "./dist/adaptive/sdk/index.mjs"
+    },
+    "./sdk": {
+      "types": "./dist/adaptive/sdk/index.d.mts",
+      "default": "./dist/adaptive/sdk/index.mjs"
+    },
+    "./controller": {
+      "types": "./dist/adaptive/src/controller.d.mts",
+      "default": "./dist/adaptive/src/controller.mjs"
+    },
+    "./contract": {
+      "types": "./dist/adaptive/contract/c0.d.mts",
+      "default": "./dist/adaptive/contract/c0.mjs"
+    },
+    "./checkpoint": {
+      "types": "./dist/adaptive/contract/checkpoint-v1.d.mts",
+      "default": "./dist/adaptive/contract/checkpoint-v1.mjs"
+    },
+    "./evaluation": {
+      "types": "./dist/adaptive/evaluation/index.d.mts",
+      "default": "./dist/adaptive/evaluation/index.mjs"
+    },
+    "./mcp": {
+      "types": "./dist/adaptive/mcp/work.d.mts",
+      "default": "./dist/adaptive/mcp/work.mjs"
+    },
+    "./typesafe": {
+      "types": "./dist/adaptive/providers/index.d.mts",
+      "default": "./dist/adaptive/providers/index.mjs"
+    }
+  },
+  "types": "./dist/adaptive/sdk/index.d.mts",
+  "files": [
+    "adaptive/contract/",
+    "adaptive/src/",
+    "adaptive/sdk/",
+    "adaptive/evaluation/",
+    "adaptive/mcp/",
+    "adaptive/providers/",
+    "dist/",
+    "docs/",
+    "scripts/",
+    "netlify/",
+    "public/",
+    "examples/",
+    "skills/",
+    ".env.example",
+    "mcp.json.example",
+    "netlify.toml",
+    "LICENSE",
+    "NOTICE.md",
+    "CHANGELOG.md",
+    "README.md",
+    "FABRIC.md",
+    "PROVENANCE.json",
+    "PUBLIC_ALLOWLIST.json",
+    "SOURCE_MANIFEST.sha256",
+    "THIRD_PARTY_DEPENDENCIES.json",
+    "SECURITY.md"
+  ]
 }
