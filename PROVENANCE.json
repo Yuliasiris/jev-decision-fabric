@@ -307,5 +307,14 @@
     "recovery_scope": "Graceful saved pause and read-only receipt inspection; actual host SIGKILL/power-loss recovery remains unqualified. No stale-lock removal or unknown-effect replay",
     "rights": "MIT project-authored source/documents; dependencies, service and models remain separately governed",
     "distribution": "private:true source/tarball; no registry publication or production deployment"
+  },
+  "post_merge_review_repair_release": {
+    "version": "0.4.0-preview.6",
+    "public_base_commit": "15a4dab9f2ac69f0d137b9308643c32568e39a92",
+    "scope": "Three unique PR5 late reports, de-duplicated across two reviews: bounded CSV source reads, terminal-safe recovery command display, terminal-safe CSV human errors/output",
+    "source_boundary": "One bounded descriptor reader for start/rawSource and its worker/resume/current callers; one command argument policy including help; human presentation encoding keeps structured values exact",
+    "compatibility": "Canonical Controller and SDK, original admission/deadline/budget/source SHA/read attempt, exact-byte same-run repair, JSON/receipt fields and uncertain-effect guards retained",
+    "qualification": "Focused dynamic local reproductions and normal local scripted I/O; not live Jev/native/model, second authenticated host or production crash qualification",
+    "publication": "MIT project source, private:true unchanged; no registry publication or production deployment"
   }
 }
