@@ -62,8 +62,12 @@ If a start reply is lost, run_id stays null. The client preserves the original
 request_id and points to actual host readback/reconciliation; it does not
 fabricate a run_id, regenerate an id, or call status without a known run.
 If a continue reply is lost, another continue is rejected. An explicit status
-may read the original known run after confirmed graceful host exit, but that
-read does not silently settle the uncertain prior operation. Tool errors,
+may read the original known run through the currently authorized host even
+when an earlier transport close is unconfirmed. It neither infers that the
+old host exited nor settles the uncertain prior operation. A verified current
+Result stays available beside the historical unknown status; old operation
+dispositions and close records are retained. A lost start with no known run
+still cannot call status. Tool errors,
 wrong identities, text/structured mismatch and oversized replies are not
 converted into successful results. Preflight failure reports no work call
 and requests inspection of the original connection; it does not suggest an
@@ -78,9 +82,11 @@ new successful response or suggest continuation from a failed current readback.
 A later explicit verified status may confirm the current Result; it does not
 clear an older uncertain mutating operation.
 
-Normal EOF closes the reference host and releases its own writer lock. An
-unconfirmed close, crashed writer or unknown effect requires actual host
-fencing/reconciliation. Never remove its lock to force a restart. The transport
+Normal EOF closes the reference host and releases its own writer lock. Mutating
+continuation after an unconfirmed close, crashed writer or unknown effect
+requires actual host fencing/reconciliation. Read-only status still uses the
+host's existing caller and writer checks; it cannot break a surviving lock or
+grant permission to continue. Never remove a lock to force a restart. The transport
 uses a bounded reply wait; timeout does not revive the original three-minute
 admission. The journal is bounded to 32 explicit operations and 20 MiB; replies
 are at most 512 KiB. Oversized bodies are not written into the journal.

@@ -112,6 +112,50 @@ test('lost continue response is never retried; explicit status reads original re
   proof('lost-continue',{paused,unknown,status,client_journal:read(receipt),actual_transport_seen:seen,host_files:before});
 });
 
+test('known-run status reads a fresh result after lost continuation and unconfirmed close without clearing history or replaying work',async t=>{
+  const {state,receipt}=fixture(t),start=connecting(state);
+  const paused=await runParentOperation({receiptPath:receipt,operation:'start',stateDirectory:state,request,requestId,connect:start.connect});
+  const original=read(join(state,paused.run_id!,'snapshot.json')),io=readFileSync(join(state,paused.run_id!,'io-read-numbers.json'));
+  const seen:any[]=[],continuation=connecting(state,false,actual=>({
+    ...lostReply(actual,seen),
+    close:async()=>{assert.equal(await actual.close(),true);return false;}, // TEST_ONLY unconfirmed transport after real host cleanup.
+  }));
+  const unknown=await runParentOperation({receiptPath:receipt,operation:'continue',connect:continuation.connect});
+  assert.equal(unknown.status,'response_unknown');assert.equal(unknown.current_operation!.transport_closed,false);
+  const oldEntry=read(receipt).history[1],before=files(join(state,paused.run_id!)),statusBinding=connecting(state,false),replies:any[]=[];
+  const current=await runParentOperation({receiptPath:receipt,operation:'status',connect:async()=>{
+    const actual=await statusBinding.connect();return {...actual,request:async message=>{replies.push(message);return actual.request(message);}};
+  }});
+  assert.equal(statusBinding.calls,1);assert.equal(replies.filter(m=>m.method==='tools/call').length,1);
+  assert.equal(replies.find(m=>m.method==='tools/call').params.name,'work_status_v1');
+  assert.equal(current.status,'response_unknown');assert.equal(current.result!.status,'complete');assert.equal(current.result_is_cached,false);
+  assert.equal(current.current_operation!.operation,'status');assert.equal(current.current_operation!.disposition,'verified');
+  assert.equal(current.current_operation!.transport_closed,true);assert.equal(current.current_operation!.error,null);
+  assert.equal(current.next_operation,'host_readback_or_reconciliation');assert.doesNotMatch(current.text,/Total: 720/);
+  assert.deepEqual(read(receipt).history[1],oldEntry);assert.equal(oldEntry.disposition,'response_unknown');assert.equal(oldEntry.transport_closed,false);
+  assert.deepEqual(files(join(state,paused.run_id!)),before);assert.deepEqual(readFileSync(join(state,paused.run_id!,'io-read-numbers.json')),io);
+  const saved=read(join(state,paused.run_id!,'snapshot.json'));assert.deepEqual(saved.admission,original.admission);
+  assert.deepEqual(saved.checkpoint.state.request.budget,original.checkpoint.state.request.budget);assert.equal(current.result!.usage.by_kind.worker,1);
+  const journalBefore=readFileSync(receipt,'utf8');let replayConnections=0;
+  await assert.rejects(runParentOperation({receiptPath:receipt,operation:'continue',connect:async()=>{replayConnections++;throw Error('TEST_ONLY forbidden replay');}}),/PARENT_RECONCILIATION_REQUIRED/);
+  assert.equal(replayConnections,0);assert.equal(readFileSync(receipt,'utf8'),journalBefore);
+  proof('status-after-unconfirmed-lost-continue',{paused,unknown,current,old_entry:oldEntry,client_journal:read(receipt),actual_requests:replies,host_files:before,replayConnections});
+});
+
+test('a verified result with unconfirmed earlier close permits read-only status while mutating continuation remains blocked',async t=>{
+  const {state,receipt}=fixture(t),start=connecting(state,false,actual=>({...actual,close:async()=>{assert.equal(await actual.close(),true);return false;}}));
+  const first=await runParentOperation({receiptPath:receipt,operation:'start',stateDirectory:state,request,requestId,connect:start.connect});
+  assert.equal(first.status,'readback_unconfirmed');assert.equal(first.result!.status,'complete');
+  const originalEntry=read(receipt).history[0],before=files(join(state,first.run_id!)),binding=connecting(state,false);
+  const current=await runParentOperation({receiptPath:receipt,operation:'status',connect:binding.connect});
+  assert.equal(current.status,'complete');assert.equal(current.result_is_cached,false);assert.deepEqual(current.result,first.result);
+  assert.deepEqual(read(receipt).history[0],originalEntry);assert.equal(originalEntry.disposition,'verified');assert.equal(originalEntry.transport_closed,false);
+  const journalBefore=readFileSync(receipt,'utf8');let mutationConnections=0;
+  await assert.rejects(runParentOperation({receiptPath:receipt,operation:'continue',connect:async()=>{mutationConnections++;throw Error('TEST_ONLY forbidden mutation');}}),/PARENT_HOST_CLOSE_UNCONFIRMED/);
+  assert.equal(mutationConnections,0);assert.equal(readFileSync(receipt,'utf8'),journalBefore);assert.deepEqual(files(join(state,first.run_id!)),before);
+  proof('status-after-unconfirmed-verified-close',{first,current,original_entry:originalEntry,client_journal:read(receipt),host_files:before,mutationConnections});
+});
+
 test('actual host rejects a conflicting request_id from a separate client journal without creating another run',async t=>{
   const {directory,state,receipt}=fixture(t),start=connecting(state,false);
   const first=await runParentOperation({receiptPath:receipt,operation:'start',stateDirectory:state,request,requestId,connect:start.connect});

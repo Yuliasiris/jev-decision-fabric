@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0-preview.3
+
+- Allow fresh read-only status of a known saved run after an earlier transport
+  closure was unconfirmed. Preserve the uncertain operation and block continue
+  replay; a status read does not reconcile that historical uncertainty.
+- Verify this recovery after an actual owned response proxy was killed while
+  a committed continue reply was withheld. This is bounded local transport
+  evidence; actual host crash, live J1 and real model comparison remain open.
+
 ## 0.4.0-preview.2
 
 - Require an independently verified pre-registered evaluation cohort before

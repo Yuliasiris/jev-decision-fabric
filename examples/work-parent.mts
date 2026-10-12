@@ -153,7 +153,7 @@ export async function runParentOperation(options:Readonly<{
       if(request!==undefined||requestId!==undefined||stateDirectory!==undefined&&stateDirectory!==journal.state_directory)
         throw new ParentClientError('PARENT_ARGUMENTS_INVALID');
       if(operation==='continue'&&uncertain(journal))throw new ParentClientError('PARENT_RECONCILIATION_REQUIRED');
-      if(journal.history.some(e=>e.transport_closed!==true&&e.disposition!=='prepared'))throw new ParentClientError('PARENT_HOST_CLOSE_UNCONFIRMED');
+      if(operation==='continue'&&journal.history.some(e=>e.transport_closed!==true&&e.disposition!=='prepared'))throw new ParentClientError('PARENT_HOST_CLOSE_UNCONFIRMED');
     }
     if(!journal||journal.history.length>=MAX_ENTRIES)throw new ParentClientError('PARENT_JOURNAL_FULL');
     const tool=operation==='start'?'work_start_v1':operation==='continue'?'work_continue_v1':'work_status_v1';
