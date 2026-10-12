@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.0-preview.2
+
+- Require an independently verified pre-registered evaluation cohort before
+  recommending a method from held-out gains. Preserve all registered cases,
+  original splits and prior-use evidence; missing proof retains fixed execution.
+- Package an ordinary parent stdio client over the existing reference host.
+  Preserve client request identity and unknown outcomes across process exits.
+- Use stable hash filenames for reference host request/observation records and
+  retain exact legacy record readback without changing logical identities.
+- Keep the existing Controller, SDK execution ports, MCP handlers and fixed
+  Plugin tools unchanged. These changes do not qualify live J1, native model
+  comparison, authenticated remote hosts or whole-Goal completion.
+
 The bounded reference host also checks exact stored snapshots/results and its
 exclusive writer lease, rejects overlapping mutations, preserves terminal and
 expired readback, and computes actual two-source sentence differences. A ready

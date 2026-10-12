@@ -4,6 +4,7 @@ import {EVALUATION_VERSION, STRATEGIES, digest, runPairedComparison, createPolic
   consumePolicyProfile, validateManifest} from '../evaluation/index.mts';
 import type {ArmReceipt, ConditionManifest, Grade, EvaluationHooks, PolicyAuthority,
   Strategy, StrategyRunners} from '../evaluation/index.mts';
+import {qualify} from './evaluation-cohort-fixtures.mts';
 
 const sha = (s: string) => digest(s);
 const originalFetch = globalThis.fetch;
@@ -64,7 +65,7 @@ test('perfect injected/replay/scripted scores remain diagnostic and cannot recom
     const h = {...hooks(s => grade(s === 'adaptive' ? 1 : 0.2)), attestReceipt: async () => {attest++; throw Error('must not attest a fixture');}};
     const result = await runPairedComparison(manifest(mode), runners((m,s) => receipt(m,s,mode)), h);
     assert.equal(result.status, 'diagnostic_only'); assert.equal(attest, 0);
-    const p = createPolicyProfile([result]); assert.equal(p.selection, 'fixed'); assert.equal(p.provider_selection_required, false);
+    const p = createPolicyProfile([result],await qualify([result])); assert.equal(p.selection, 'fixed'); assert.equal(p.provider_selection_required, false);
   }
 });
 
@@ -129,16 +130,16 @@ test('candidate-generation, selection, technical and final errors remain distinc
 test('unknown metrics and incomparable original cost units do not select an apparent winner', async () => {
   const unknown=await paired(manifest('unknown'),(m,s)=>({...receipt(m,s),measurements:{latency_ms:null,latency_scope:null,cost:null,cost_unit:null,original:null}}),s=>grade(s==='adaptive'?1:0.4));
   assert.equal(unknown.arms.adaptive.receipt!.measurements.cost,null);
-  assert.equal(createPolicyProfile([unknown]).selection,'fixed');
+  assert.equal(createPolicyProfile([unknown],await qualify([unknown])).selection,'fixed');
   const mixed=await paired(manifest('units'),(m,s)=>({...receipt(m,s),measurements:{...receipt(m,s).measurements,cost_unit:s==='adaptive'?'other-original-unit':'original-test-unit'}}),s=>grade(s==='adaptive'?1:0.4));
-  assert.equal(createPolicyProfile([mixed]).selection,'fixed');
+  assert.equal(createPolicyProfile([mixed],await qualify([mixed])).selection,'fixed');
   const scopes=await paired(manifest('scopes'),(m,s)=>({...receipt(m,s),measurements:{...receipt(m,s).measurements,latency_scope:s==='adaptive'?'native-time-only':'original-admission-through-final-receipt'}}),s=>grade(s==='adaptive'?1:0.4));
-  assert.equal(createPolicyProfile([scopes]).selection,'fixed');
+  assert.equal(createPolicyProfile([scopes],await qualify([scopes])).selection,'fixed');
 });
 
 test('unknown rework/re-explanation remains null rather than being replaced with a zero advantage', async () => {
   const result=await paired(manifest(),receipt,s=>({...grade(s==='adaptive'?1:0.3),rework:null,re_explanation:null}));
-  const p=createPolicyProfile([result]);assert.equal(p.selection,'fixed');assert.equal(result.arms.adaptive.grade!.rework,null);
+  const p=createPolicyProfile([result],await qualify([result]));assert.equal(p.selection,'fixed');assert.equal(result.arms.adaptive.grade!.rework,null);
 });
 
 test('design-only improvements and design/held-out input overlap cannot recommend adaptive', async () => {
@@ -152,24 +153,24 @@ test('design-only improvements and design/held-out input overlap cannot recommen
 test('known held-out improvement can select adaptive, single/no-Jev or fixed with no predetermined winner', async () => {
   for(const winner of STRATEGIES) {
     const result=await paired(manifest(winner),receipt,s=>grade(s===winner?0.95:0.7));
-    const p=createPolicyProfile([result]);assert.equal(p.selection,winner);assert.equal(p.provider_selection_required,winner==='adaptive');
+    const p=createPolicyProfile([result],await qualify([result]));assert.equal(p.selection,winner);assert.equal(p.provider_selection_required,winner==='adaptive');
   }
-  const tie=createPolicyProfile([await paired(manifest('tie'))]);assert.equal(tie.selection,'fixed');
+  const tied=await paired(manifest('tie')),tie=createPolicyProfile([tied],await qualify([tied]));assert.equal(tie.selection,'fixed');
 });
 
 test('higher answer quality with worse time or unnecessary work does not claim dominance', async () => {
   const slow=await paired(manifest('slow'),(m,s)=>({...receipt(m,s),measurements:{...receipt(m,s).measurements,latency_ms:s==='adaptive'?200:100}}),s=>grade(s==='adaptive'?1:0.7));
-  assert.equal(createPolicyProfile([slow]).selection,'fixed');
+  assert.equal(createPolicyProfile([slow],await qualify([slow])).selection,'fixed');
   const waste=await paired(manifest('waste'),receipt,s=>({...grade(s==='adaptive'?1:0.7),unnecessary_work:s==='adaptive'?1:0}));
-  assert.equal(createPolicyProfile([waste]).selection,'fixed');
+  assert.equal(createPolicyProfile([waste],await qualify([waste])).selection,'fixed');
 });
 
 test('profile consumer executes exactly the chosen existing port on a new original admission', async () => {
   const measured=await paired(manifest('evaluation'),receipt,s=>grade(s==='single'?1:0.5));
-  const profile=createPolicyProfile([measured]), m=manifest('new-job');let calls=0;
+  const cohort=await qualify([measured]),profile=createPolicyProfile([measured],cohort), m=manifest('new-job');let calls=0;
   const ports:StrategyRunners={single:async (input,ctx)=>{calls++;assert.equal(ctx.deadline_ms,m.deadline_ms);assert.deepEqual(input.budget,m.budget);return receipt(input,'single','live',ctx.run_id);},
     fixed:async()=>{throw Error('wrong port');},adaptive:async()=>{throw Error('wrong port');}};
-  const output=await consumePolicyProfile(profile,{run_id:'new-current-parent',manifest:m},ports,authority(),{signal:new AbortController().signal});
+  const output=await consumePolicyProfile(profile,{run_id:'new-current-parent',manifest:m},ports,authority(),{signal:new AbortController().signal,cohort});
   assert.equal(calls,1);assert.equal(output.strategy,'single');assert.equal(output.qualification,'measured_use');
   assert.equal(output.receipt.deadline_ms,m.deadline_ms);assert.equal(output.automatic_apply,false);
 });
