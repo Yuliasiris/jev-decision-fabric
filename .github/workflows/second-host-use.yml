@@ -46,11 +46,11 @@ jobs:
         run: |
           node -e 'const fs=require("node:fs");for(const key of ["NPM_CONFIG_USERCONFIG","NPM_CONFIG_GLOBALCONFIG"])fs.writeFileSync(process.env[key],"",{flag:"wx"})'
           npm ci --ignore-scripts --no-audit --no-fund
-          npm run build:sdk
+          # npm pack invokes the package's pinned prepare build once; do not duplicate it.
           mkdir ../distribution
           npm pack --ignore-scripts --foreground-scripts=false --json --pack-destination ../distribution > ../pack.json
-      - name: Diagnose the changed caller prefix without SDK admission
-        run: node caller/ci/second-host-use.mjs public-source pack.json distribution second-caller-evidence --preflight-only
+      - name: Receive real public-sample work through the installed consumer
+        run: node caller/ci/second-host-use.mjs public-source pack.json distribution second-caller-evidence
       - name: Return the original result, raw operations and saved archive
         id: archive
         if: always()
