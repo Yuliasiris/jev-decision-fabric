@@ -11,6 +11,9 @@ const repository=fileURLToPath(new URL('../../',import.meta.url));
 const source=resolve(process.env.CSV_CONSUMER_SOURCE_ROOT??join(repository,'consumers/csv-audit'));
 const sdk=resolve(process.env.CSV_SDK_PACKAGE_ROOT??repository);
 const hash=(raw:string|Buffer)=>createHash('sha256').update(raw).digest('hex');
+// Bounded child-output snippet: an output-buffer failure can fill the captured
+// stream to the maxBuffer limit, and an unbounded dump would bury the headline.
+const tail=(raw:string|null|undefined)=>!raw?'':raw.length>2000?`${raw.slice(0,2000)}\n… (${raw.length-2000} more characters)`:raw;
 function fixture(){
   const root=mkdtempSync(join(tmpdir(),'csv-consumer-')),app=join(root,'app');mkdirSync(app);mkdirSync(join(root,'node_modules'));
   // The application resolves public package exports, never private/source-relative SDK paths.
@@ -38,7 +41,14 @@ fs.closeSync=fd=>{if(tracked.has(fd)){emit({kind:'close',session:tracked.get(fd)
       preloads.push('--import',observer);
     }
     const p=spawnSync(process.execPath,[...preloads,join(app,'index.mjs'),...args],{cwd:root,encoding:'utf8',timeout:probe?.timeout??15000});
-    if(p.error)throw new Error(`csv consumer child failed to start or timed out: ${p.error}${p.stderr?`\nchild stderr:\n${p.stderr}`:''}`);
+    // Neutral spawn/child-failure headline: error codes such as ENOBUFS (output
+    // buffer exhaustion) are neither "failed to start" nor "timed out", so the
+    // label must not pre-judge the cause. Report the error code plus the
+    // available termination status, signal and captured child output, which a
+    // child may have printed progress or its own failure details to before it
+    // was killed or exceeded the buffer.
+    if(p.error)throw new Error(
+      `csv consumer child spawn/execution failed: code=${p.error.code??'none'} ${p.error}\nexit=${p.status}${p.signal?` signal=${p.signal}`:''}\nchild stderr:\n${tail(p.stderr)}\nchild stdout:\n${tail(p.stdout)}`);
     // The consumer CLI prints machine JSON on stdout for success and refused
     // operations alike, so unparseable stdout means the child never reached its
     // own CLI output. Surface the child's exit, signal and stderr instead of
