@@ -38,7 +38,14 @@ fs.closeSync=fd=>{if(tracked.has(fd)){emit({kind:'close',session:tracked.get(fd)
       preloads.push('--import',observer);
     }
     const p=spawnSync(process.execPath,[...preloads,join(app,'index.mjs'),...args],{cwd:root,encoding:'utf8',timeout:probe?.timeout??15000});
-    assert.equal(p.error,undefined);return {exit:p.status,json:JSON.parse(p.stdout),human:p.stderr,
+    if(p.error)throw new Error(`csv consumer child failed to start or timed out: ${p.error}${p.stderr?`\nchild stderr:\n${p.stderr}`:''}`);
+    // The consumer CLI prints machine JSON on stdout for success and refused
+    // operations alike, so unparseable stdout means the child never reached its
+    // own CLI output. Surface the child's exit, signal and stderr instead of
+    // masking that harness/child failure as a JSON syntax error.
+    let json;try{json=JSON.parse(p.stdout);}catch{throw new Error(
+      `csv consumer child produced no machine JSON on stdout: exit=${p.status}${p.signal?` signal=${p.signal}`:''}\nchild stderr:\n${p.stderr}\nchild stdout:\n${p.stdout}`);}
+    return {exit:p.status,json,human:p.stderr,
       fs_trace:probe&&existsSync(trace)?JSON.parse(readFileSync(trace,'utf8')):[]};};
   const start=(extra:string[]=[])=>invoke(['--request','Audit this CSV and total the net column','--file',file,'--column','net','--unit','credits','--state',state,...extra]);
   return {root,file,state,invoke,start,close:()=>rmSync(root,{recursive:true,force:true})};
